@@ -1,0 +1,35 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+description: The `/sys/decode-token` endpoint is used to decode the encoded token which is the result of /sys/generate-root.
+---
+
+# `/sys/decode-token`
+
+The `/sys/decode-token` endpoint is used to decode the encoded token which is the result of the [/sys/generate-root](generate-root.mdx) API.
+
+## Parameters
+
+- `encoded_token` `(string: <required>)` – Specifies the encoded token (result from /sys/generate-root).
+
+- `otp` `(string: <required>)` - Specifies the otp code for decode.
+
+## Sample response
+
+```json
+{
+  "request_id": "9bc0fab8-d65c-3961-afe6-d05f50c5fd22",
+  "lease_id": "",
+  "lease_duration": 0,
+  "renewable": false,
+  "data": {
+    "token": "4RUmoevJ3lsLni9sTXcNnRE1"
+  },
+  "warnings": null
+}
+```

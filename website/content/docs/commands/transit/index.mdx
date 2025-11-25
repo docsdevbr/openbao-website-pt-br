@@ -1,0 +1,38 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: Overview
+description: |-
+  The "transit" command groups subcommands for interacting with OpenBao's Transit
+  secrets engine.
+---
+
+# transit
+
+The `transit` command groups subcommands for interacting with OpenBao's
+[Transit Secrets Engine](../../secrets/transit/index.mdx).
+
+## Syntax
+
+Option flags for a given subcommand are provided after the subcommand, but before the arguments.
+
+## Examples
+
+To [import](import.mdx) keys into a mount via the
+[Transit BYOK](../../secrets/transit/index.mdx#bring-your-own-key-byok)
+mechanism, use the `bao transit import <path> <key>` or
+`bao transit import-version <path> <key>` commands:
+
+```
+$ bao transit import transit/keys/test-key @test-key type=rsa-2048
+Retrieving transit wrapping key.
+Wrapping source key with ephemeral key.
+Encrypting ephemeral key with transit wrapping key.
+Submitting wrapped key to OpenBao transit.
+Success!
+```

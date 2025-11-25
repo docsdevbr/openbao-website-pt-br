@@ -1,0 +1,118 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: Overview
+description: Learn about OpenBao's plugin system.
+---
+
+
+# Plugin system
+
+OpenBao supports 3 types of plugins; auth methods, secret engines, and database
+plugins. This concept allows both built-in and external plugins to be treated
+like building blocks. Any plugin can exist at multiple different mount paths.
+Different versions of a plugin may be at each location, with each version differing
+from OpenBao's version.
+
+A plugin is uniquely identified by its type (one of `secret`, `auth`, or
+`database`), name (e.g. `kv`), and version (e.g `v1.0.0`). An empty version
+implies either the built-in plugin or the single unversioned plugin that can
+be registered.
+
+See [Plugin Upgrade Procedure](../upgrading/plugins.mdx#plugin-upgrade-procedure)
+for details on how to upgrade a built-in plugin in-place.
+
+## Plugin distribution methods
+
+### Built-In plugins
+
+Built-in plugins are shipped with OpenBao, often for commonly used integrations,
+and can be used without any prerequisite steps.
+
+### External plugins
+
+External plugins are not shipped with OpenBao and require additional operator
+steps to be installed, configured, and registered with OpenBao before they can be
+used.
+
+To run an external plugin, a binary of the plugin is required. Plugin
+binaries can be obtained from the [openbao-plugins](https://github.com/openbao/openbao-plugins) repository
+or they can be [built from source](plugin-development.mdx#building-a-plugin-from-source).
+OpenBao also supports downloading and managing plugins distributed as OCI (Open
+Container Initiative) images from container registries.  See the [OCI
+Plugin](../configuration/plugins.mdx) configuration reference for complete
+documentation.
+
+OpenBao's external plugins are completely separate, standalone applications that
+OpenBao executes and communicates with over RPC. Each time an OpenBao secret engine,
+auth method, or database plugin is mounted, a new process is spawned. However,
+plugins can be made to implement [plugin multiplexing](plugin-architecture.mdx#plugin-multiplexing)
+to improve performance. Plugin multiplexing allows plugin processes to be
+reused across all mounts of a given type.
+
+## Plugin versioning
+
+OpenBao supports managing, running and upgrading plugins using semantic version
+information.
+
+The plugin catalog optionally supports specifying a semantic version when
+registering an external plugin. Multiple versions of a plugin can be registered
+in the catalog simultaneously, and a version can be selected when mounting a
+plugin or tuning an existing mount in-place.
+
+If no version is specified when creating a new mount, the following precedence is used
+for any available plugins whose type and name match:
+
+* The plugin registered with no version
+* The plugin with the most recent semantic version among any registered versions
+* The plugin built into OpenBao
+
+### Built-In versions
+
+OpenBao will report a version for built-in plugins to indicate what version of the
+plugin code got built into OpenBao as a dependency. For example:
+
+```shell-session
+$ bao plugin list secret
+Name                Version
+----                -------
+approle                         auth        v2.0.0+builtin.bao
+cert                            auth        v2.0.0+builtin.bao
+jwt                             auth        v2.0.0+builtin.bao
+kerberos                        auth        v2.0.0+builtin.bao
+kubernetes                      auth        v2.0.0+builtin.bao
+ldap                            auth        v2.0.0+builtin.bao
+oidc                            auth        v2.0.0+builtin.bao
+radius                          auth        v2.0.0+builtin.bao
+userpass                        auth        v2.0.0+builtin.bao
+cassandra-database-plugin       database    v2.0.0+builtin.bao
+influxdb-database-plugin        database    v2.0.0+builtin.bao
+mysql-aurora-database-plugin    database    v2.0.0+builtin.bao
+mysql-database-plugin           database    v2.0.0+builtin.bao
+mysql-legacy-database-plugin    database    v2.0.0+builtin.bao
+mysql-rds-database-plugin       database    v2.0.0+builtin.bao
+postgresql-database-plugin      database    v2.0.0+builtin.bao
+redis-database-plugin           database    v2.0.0+builtin.bao
+valkey-database-plugin          database    v2.0.0+builtin.bao
+kubernetes                      secret      v2.0.0+builtin.bao
+kv                              secret      v2.0.0+builtin.bao
+ldap                            secret      v2.0.0+builtin.bao
+openldap                        secret      v2.0.0+builtin.bao
+pki                             secret      v2.0.0+builtin.bao
+rabbitmq                        secret      v2.0.0+builtin.bao
+ssh                             secret      v2.0.0+builtin.bao
+totp                            secret      v2.0.0+builtin.bao
+transit                         secret      v2.0.0+builtin.bao
+```
+
+The `bao` metadata identifier indicates that plugin's code was within the
+OpenBao repo. For plugins within the OpenBao repo, OpenBao's own major, minor,
+and patch versions are used to form the plugin version.
+
+The `builtin` metadata identifier is reserved and cannot be used when
+registering external plugins.

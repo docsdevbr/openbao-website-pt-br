@@ -1,0 +1,47 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: rotate
+description: |-
+  The "operator rotate" rotates the underlying encryption key which is used to
+  secure data written to the storage backend. This installs a new key in the key
+  ring. This new key is used to encrypt new data, while older keys in the ring
+  are used to decrypt older data.
+---
+
+# operator rotate
+
+The `operator rotate` rotates the underlying encryption key which is used to
+secure data written to the storage backend. This installs a new key in the key
+ring. This new key is used to encrypted new data, while older keys in the ring
+are used to decrypt older data.
+
+This is an online operation and does not cause downtime. This command is run
+per-cluster (not per-server), since OpenBao servers in HA mode share the same
+storage backend.
+
+## Examples
+
+Rotate OpenBao's encryption key:
+
+```shell-session
+$ bao operator rotate
+Key Term        3
+Install Time    01 May 17 10:30 UTC
+```
+
+## Usage
+
+The following flags are available in addition to the [standard set of
+flags](../index.mdx) included on all commands.
+
+### Output options
+
+- `-format` `(string: "table")` - Print the output in the given format. Valid
+  formats are "table", "json", or "yaml". This can also be specified via the
+  `BAO_FORMAT` environment variable.

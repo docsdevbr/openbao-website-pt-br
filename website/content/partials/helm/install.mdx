@@ -1,0 +1,12 @@
+```sh
+# List the available releases
+$ helm search repo openbao/openbao -l
+NAME            CHART VERSION   APP VERSION             DESCRIPTION
+openbao/openbao 0.4.0           v2.0.0-alpha20240329    Official OpenBao Chart
+openbao/openbao 0.3.0           v2.0.0-alpha20240329    Official OpenBao Chart
+openbao/openbao 0.2.0           v2.0.0-alpha20240329    Official OpenBao Chart
+...
+
+# Install version 0.4.0
+$ helm install openbao openbao/openbao --version 0.4.0
+```

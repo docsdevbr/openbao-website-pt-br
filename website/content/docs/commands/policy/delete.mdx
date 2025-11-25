@@ -1,0 +1,36 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: delete
+description: |-
+  The "policy delete" command deletes the policy named NAME in the OpenBao server.
+  Once the policy is deleted, all tokens associated with the policy are affected
+  immediately.
+---
+
+# policy delete
+
+The `policy delete` command deletes the policy named NAME in the OpenBao server.
+Once the policy is deleted, all tokens associated with the policy are affected
+immediately.
+
+Note that it is not possible to delete the "default" or "root" policies. These
+are built-in policies.
+
+## Examples
+
+Delete the policy named "my-policy":
+
+```shell-session
+$ bao policy delete my-policy
+```
+
+## Usage
+
+There are no flags beyond the [standard set of flags](../index.mdx)
+included on all commands.

@@ -1,0 +1,24 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: Kubernetes
+description: Kubernetes Method for OpenBao Auto-Auth
+---
+
+# OpenBao Auto-Auth kubernetes method
+
+The `kubernetes` method reads in a Kubernetes service account token from the
+running pod (via `/var/run/secrets/kubernetes.io/serviceaccount/token`) and
+sends it to the [Kubernetes Auth
+method](../../../auth/kubernetes.mdx).
+
+## Configuration
+
+- `role` `(string: required)` - The role to authenticate against on OpenBao
+- `token_path` `(string: optional)` - The file path to a custom JWT token to use
+  for authentication. If omitted, the default service account token path is used.

@@ -1,0 +1,70 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: Overview
+description: |-
+  The "audit" command groups subcommands for interacting with OpenBao's audit
+  devices. Users can list, enable, and disable audit devices.
+---
+
+# audit
+
+The `audit` command groups subcommands for interacting with OpenBao's audit
+devices. Users can list, enable, and disable audit devices.
+
+For more information, please see the [audit device
+documentation](../../audit/index.mdx)
+
+## Examples
+
+Enable an audit device:
+
+```shell-session
+$ bao audit enable file file_path=/tmp/my-file.txt
+Success! Enabled the file audit device at: file/
+```
+
+List all audit devices:
+
+```shell-session
+$ bao audit list
+Path     Type    Description
+----     ----    -----------
+file/    file    n/a
+```
+
+Disable an audit device:
+
+```shell-session
+$ bao audit disable file/
+Success! Disabled audit device (if it was enabled) at: file/
+```
+
+:::warning
+
+Note: Once an audit device is disabled, you will no longer be able to HMAC values
+for comparison with entries in the audit logs. This is true even if you re-enable
+the audit device at the same path, as a new salt will be created for hashing.
+
+:::
+
+## Usage
+
+```text
+Usage: bao audit <subcommand> [options] [args]
+
+  # ...
+
+Subcommands:
+    disable    Disables an audit device
+    enable     Enables an audit device
+    list       Lists enabled audit devices
+```
+
+For more information, examples, and usage about a subcommand, click on the name
+of the subcommand in the sidebar.

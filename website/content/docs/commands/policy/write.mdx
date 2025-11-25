@@ -1,0 +1,42 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: write
+description: |-
+  The "policy write" command uploads a policy with name NAME from the contents
+  of a local file PATH or stdin. If PATH is "-", the policy is read from stdin.
+  Otherwise, it is loaded from the file at the given path on the local disk.
+---
+
+# policy write
+
+The `policy write` command uploads a policy with name NAME from the contents of
+a local file PATH or stdin. If PATH is "-", the policy is read from stdin.
+Otherwise, it is loaded from the file at the given path on the local disk.
+
+For details on the policy syntax, please see the [policy
+documentation](../../concepts/policies.mdx).
+
+## Examples
+
+Upload a policy named "my-policy" from "/tmp/policy.hcl" on the local disk:
+
+```shell-session
+$ bao policy write my-policy /tmp/policy.hcl
+```
+
+Upload a policy from stdin:
+
+```shell-session
+$ cat my-policy.hcl | bao policy write my-policy -
+```
+
+## Usage
+
+There are no flags beyond the [standard set of flags](../index.mdx)
+included on all commands.

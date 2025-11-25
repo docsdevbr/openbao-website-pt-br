@@ -1,0 +1,27 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+description: |-
+  Describes how to set up a development OpenBao
+---
+
+# Development
+
+:::warning
+
+**Important Note:** This chart is not compatible with Helm 2. Please use Helm 3.6+ with this chart.
+
+:::
+
+The below `values.yaml` can be used to set up a single development OpenBao server.
+
+```yaml
+server:
+  dev:
+    enabled: true
+```

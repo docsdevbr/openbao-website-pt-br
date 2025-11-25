@@ -1,0 +1,46 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+description: |-
+  The `/sys/leader` endpoint is used to check the high availability status and
+  current leader of OpenBao.
+---
+
+# `/sys/leader`
+
+The `/sys/leader` endpoint is used to check the High Availability status and
+current leader of OpenBao.
+
+## Read leader status
+
+This endpoint returns the High Availability status and current leader instance
+of OpenBao.
+
+| Method | Path          |
+| :----- | :------------ |
+| `GET`  | `/sys/leader` |
+
+### Sample request
+
+```shell-session
+$ curl \
+    http://127.0.0.1:8200/v1/sys/leader
+```
+
+### Sample response
+
+```json
+{
+  "ha_enabled": true,
+  "is_self": false,
+  "leader_address": "https://127.0.0.1:8200/",
+  "leader_cluster_address": "https://127.0.0.1:8201/",
+  "performance_standby": false,
+  "performance_standby_last_remote_wal": 0
+}
+```

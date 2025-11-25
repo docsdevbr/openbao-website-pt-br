@@ -1,0 +1,59 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: Overview
+description: |-
+  The "token" command groups subcommands for interacting with tokens. Users can
+  create, lookup, renew, and revoke tokens.
+---
+
+# token
+
+The `token` command groups subcommands for interacting with tokens. Users can
+create, lookup, renew, and revoke tokens.
+
+For more information on tokens, please see the [token concepts
+page](../../concepts/tokens.mdx).
+
+## Examples
+
+Create a new token:
+
+```shell-session
+$ bao token create
+```
+
+Revoke a token:
+
+```shell-session
+$ bao token revoke 96ddf4bc-d217-f3ba-f9bd-017055595017
+```
+
+Renew a token:
+
+```shell-session
+$ bao token renew 96ddf4bc-d217-f3ba-f9bd-017055595017
+```
+
+## Usage
+
+```text
+Usage: bao token <subcommand> [options] [args]
+
+  # ...
+
+Subcommands:
+    capabilities    Print capabilities of a token on a path
+    create          Create a new token
+    lookup          Display information about a token
+    renew           Renew a token lease
+    revoke          Revoke a token and its children
+```
+
+For more information, examples, and usage about a subcommand, click on the name
+of the subcommand in the sidebar.

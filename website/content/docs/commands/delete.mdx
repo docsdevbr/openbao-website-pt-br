@@ -1,0 +1,41 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+description: |-
+  The "delete" command deletes secrets and configuration from OpenBao at the given
+  path. The behavior of "delete" is delegated to the backend corresponding to
+  the given path.
+---
+
+# delete
+
+The `delete` command deletes secrets and configuration from OpenBao at the given
+path (wrapper command for HTTP DELETE). The behavior of "delete" is delegated to
+the backend corresponding to the given path.
+
+## Examples
+
+Remove data in the static secrets engine:
+
+```shell-session
+$ bao delete secret/my-secret
+```
+
+Uninstall an encryption key in the transit backend:
+
+```shell-session
+$ bao delete transit/keys/my-key
+```
+
+Note: changing the `deletion_allowed` parameter to `true` is necessary for the
+key to be successfully deleted, you can read more on key parameters [here](/api-docs/secret/transit#update-key-configuration)
+
+## Usage
+
+There are no flags beyond the [standard set of flags](index.mdx)
+included on all commands.

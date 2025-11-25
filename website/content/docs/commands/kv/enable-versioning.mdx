@@ -1,0 +1,39 @@
+---
+# Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+sidebar_label: enable-versioning
+description: |-
+  The "kv enable-versioning" command turns on versioning for the backend
+  at the provided path.
+---
+
+# kv enable-versioning
+
+The `kv enable-versioning` command turns on versioning for an existing
+non-versioned key/value secrets engine (K/V Version 1) at its path.
+
+## Examples
+
+This command turns on versioning for the K/V Version 1 secrets engine enabled at
+"secret".
+
+```shell-session
+$ bao kv enable-versioning secret
+Success! Tuned the secrets engine at: secret/
+```
+
+## Usage
+
+There are no flags beyond the [standard set of flags](../index.mdx)
+included on all commands.
+
+### Output options
+
+- `-format` `(string: "table")` - Print the output in the given format. Valid
+  formats are "table", "json", or "yaml". This can also be specified via the
+  `BAO_FORMAT` environment variable.
