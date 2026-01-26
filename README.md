@@ -27,7 +27,7 @@ apoiar o projeto.
 
 ## Licença
 
-Copyright (c) 2025 OpenBao a Series of LF Projects, LLC.<br/>
+Copyright (c) 2026 OpenBao a Series of LF Projects, LLC.<br/>
 Copyright (c) 2015 HashiCorp, Inc.
 
 Documentação licenciada sob a [Licença Pública Mozilla 2.0][license].<br/>
