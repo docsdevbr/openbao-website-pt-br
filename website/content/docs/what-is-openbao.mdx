@@ -7,81 +7,134 @@
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
 description: >-
-  Welcome to the intro guide to OpenBao! This guide is the best place to start
-  with OpenBao. We cover what OpenBao is, what problems it can solve, how it
-  compares to existing software, and contains a quick start for using OpenBao.
+  Bem-vindo ao guia introdutório do OpenBao!
+  Este guia é o melhor lugar para começar com o OpenBao.
+  Abordamos o que é o OpenBao, quais problemas ele pode resolver, como ele se
+  compara a softwares existentes e inclui um guia rápido para usar o OpenBao.
 ---
 
-# What is OpenBao?
+# O que é o OpenBao?
 
-OpenBao is an identity-based secrets and encryption management system. A _secret_ is anything that you want to tightly control access to, such as API encryption keys, passwords, and certificates. OpenBao provides encryption services that are gated by authentication and authorization methods. Using OpenBao’s UI, CLI, or HTTP API, access to secrets and other sensitive data can be securely stored and managed, tightly controlled (restricted), and auditable.
+O OpenBao é um sistema de gerenciamento de segredos e criptografia baseado em
+identidade.
+Um _segredo_ é qualquer coisa cujo acesso você queira controlar rigorosamente,
+como chaves de criptografia de API, senhas e certificados.
+O OpenBao fornece serviços de criptografia protegidos por métodos de
+autenticação e autorização.
+Usando a interface da pessoa usuária, a CLI ou a API HTTP do OpenBao, o acesso a
+segredos e outros dados confidenciais pode ser armazenado e gerenciado com
+segurança, rigorosamente controlado (restrito) e auditável.
 
-A modern system requires access to a multitude of secrets, including database credentials,
-API keys for external services, credentials for service-oriented architecture
-communication, etc. It can be difficult to understand who is accessing which secrets, especially since this can be platform-specific. Adding on key rolling, secure storage, and
-detailed audit logs is almost impossible without a custom solution. This is
-where OpenBao steps in.
+Um sistema moderno requer acesso a uma infinidade de segredos, incluindo
+credenciais de banco de dados, chaves de API para serviços externos, credenciais
+para comunicação em arquitetura orientada a serviços, etc.
+Pode ser difícil entender quem está acessando quais segredos, especialmente
+porque isso pode ser específico da plataforma.
+Adicionar recursos como rotação de chaves, armazenamento seguro e registros de
+auditoria detalhados é praticamente impossível sem uma solução personalizada.
+É aí que o OpenBao entra em cena.
 
-OpenBao validates and authorizes clients (users, machines, apps) before providing them access to secrets or stored sensitive data.
+O OpenBao valida e autoriza clientes (pessoas usuárias, máquinas, aplicações)
+antes de conceder acesso a segredos ou dados confidenciais armazenados.
 
-![How OpenBao Works](/img/how-openbao-works.png)
+![Como o OpenBao funciona](/img/how-openbao-works.png)
 
-### How does OpenBao work?
+### Como o OpenBao funciona?
 
-OpenBao works primarily with tokens and a token is associated to the client's policy. Each policy is path-based and policy rules constrains the actions and accessibility to the paths for each client. With OpenBao, you can create tokens manually and assign them to your clients, or the clients can log in and obtain a token.
+O OpenBao funciona principalmente com tokens, e um token é associado à política
+do cliente.
+Cada política é baseada em caminhos, e as regras da política restringem as ações
+e a acessibilidade aos caminhos para cada cliente.
+Com o OpenBao, você pode criar tokens manualmente e atribuí-los aos seus
+clientes, ou os clientes podem fazer login e obter um token.
 
-The core OpenBao workflow consists of four stages:
+O fluxo de trabalho principal do OpenBao consiste em quatro etapas:
 
-* **Authenticate:** Authentication in OpenBao is the process by which a client supplies information that OpenBao uses to determine if they are who they say they are. Once the client is authenticated against an auth method, a token is generated and associated to a policy.
-* **Validation:** OpenBao validates the client against third-party trusted sources, such as GitHub, LDAP, AppRole, and more.
-* **Authorize**: A client is matched against the OpenBao security policy.  This policy is a set of rules defining which API endpoints a client has access to with its OpenBao token. Policies provide a declarative way to grant or forbid access to certain paths and operations in OpenBao.
-* **Access**: OpenBao grants access to secrets, keys, and encryption capabilities by issuing a token based on policies associated with the client’s identity. The client can then use their OpenBao token for future operations.
+* **Autenticação:** A autenticação no OpenBao é o processo pelo qual um cliente
+  fornece informações que o OpenBao usa para determinar se ele é quem diz ser.
+  Assim que o cliente é autenticado com um método de autenticação, um token é
+  gerado e associado a uma política.
+* **Validação:** O OpenBao valida o cliente em relação a fontes confiáveis de
+  terceiros, como GitHub, LDAP, AppRole e outras.
+* **Autorização**: Um cliente é comparado com a política de segurança do
+  OpenBao.
+  Esta política é um conjunto de regras que define a quais endpoints da API um
+  cliente tem acesso com seu token OpenBao.
+  As políticas fornecem uma maneira declarativa de conceder ou proibir o acesso
+  a determinados caminhos e operações no OpenBao.
+* **Acesso**: O OpenBao concede acesso a segredos, chaves e recursos de
+  criptografia emitindo um token com base em políticas associadas à identidade
+  do cliente.
+  O cliente pode então usar seu token OpenBao para operações futuras.
 
-### Why OpenBao?
+### Por que usar o OpenBao?
 
-Most enterprises today have credentials sprawled across their organizations. Passwords, API keys, and credentials are stored in plain text, app source code, config files, and other locations. Because these credentials live everywhere, the sprawl can make it difficult and daunting to really know who has access and authorization to what. Having credentials in plain text also increases the potential for malicious attacks, both by internal and external attackers.
+Atualmente, a maioria das empresas possui credenciais espalhadas por toda a
+organização.
+Senhas, chaves de API e credenciais são armazenadas em texto simples,
+código-fonte de aplicações, arquivos de configuração e outros locais.
+Como essas credenciais estão por toda parte, essa dispersão pode dificultar e
+tornar complexo saber quem tem acesso e autorização para quê.
+Ter credenciais em texto simples também aumenta o potencial para ataques
+maliciosos, tanto internos quanto externos.
 
-OpenBao was designed with these challenges in mind. OpenBao takes all of these credentials and centralizes them so that they are defined in one location, which reduces unwanted exposure to credentials. But OpenBao takes it a few steps further by making sure users, apps, and systems are authenticated and explicitly authorized to access resources, while also providing an audit trail that captures and preserves a history of clients' actions.
+O OpenBao foi projetado pensando nesses desafios.
+Ele centraliza todas essas credenciais, definindo-as em um único local, o que
+reduz a exposição indesejada delas.
+Mas o OpenBao vai além, garantindo que pessoas usuárias, aplicações e sistemas
+sejam autenticados e explicitamente autorizados a acessar recursos, além de
+fornecer um registro de auditoria que captura e preserva o histórico das ações
+dos clientes.
 
-The key features of OpenBao are:
+Os principais recursos do OpenBao são:
 
-- **Secure Secret Storage**: Arbitrary key/value secrets can be stored
-  in OpenBao. OpenBao encrypts these secrets prior to writing them to persistent
-  storage, so gaining access to the raw storage isn't enough to access
-  your secrets.
+- **Armazenamento seguro de segredos**: Segredos arbitrários de chave/valor
+  podem ser armazenados no OpenBao.
+  O OpenBao criptografa esses segredos antes de gravá-los no armazenamento
+  persistente, portanto, obter acesso ao armazenamento bruto não é suficiente
+  para acessar seus segredos.
 
-- **Dynamic Secrets**: OpenBao can generate secrets on-demand for some systems,
-  such as Kubernetes or SQL databases. For example, when an application needs to
-  access a Kubernetes cluster, it asks OpenBao for credentials, and OpenBao will
-  generate an Kubernetes service account token with valid permissions on demand.
-  After creating these dynamic secrets, OpenBao will also automatically revoke
-  them after the lease is up.
+- **Segredos dinâmicos**: O OpenBao pode gerar segredos sob demanda para alguns
+  sistemas, como Kubernetes ou bancos de dados SQL.
+  Por exemplo, quando uma aplicação precisa acessar um cluster Kubernetes, ela
+  solicita credenciais ao OpenBao, e o OpenBao gera um token de conta de serviço
+  do Kubernetes com permissões válidas sob demanda.
+  Após criar esses segredos dinâmicos, o OpenBao também os revogará
+  automaticamente após o término do período de concessão.
 
-- **Data Encryption**: OpenBao can encrypt and decrypt data without storing
-  it. This allows security teams to define encryption parameters and
-  developers to store encrypted data in a location such as a SQL database
-  without having to design their own encryption methods.
+- **Criptografia de dados**: O OpenBao pode criptografar e descriptografar dados
+  sem armazená-los.
+  Isso permite que as equipes de segurança definam parâmetros de criptografia e
+  que as pessoas desenvolvedoras armazenem dados criptografados em um local como
+  um banco de dados SQL, sem precisar criar seus próprios métodos de
+  criptografia.
 
-- **Leasing and Renewal**: All secrets in OpenBao have a _lease_ associated
-  with them. At the end of the lease, OpenBao will automatically revoke that
-  secret. Clients are able to renew leases via built-in renew APIs.
+- **Locação e renovação**: Todos os segredos no OpenBao têm uma _concessão_
+  associada.
+  Ao término da concessão, o OpenBao revogará automaticamente esse segredo.
+  Os clientes podem renovar as concessões por meio das APIs de renovação
+  integradas.
 
-- **Revocation**: OpenBao has built-in support for secret revocation. OpenBao
-  can revoke not only single secrets, but a tree of secrets, for example
-  all secrets read by a specific user, or all secrets of a particular type.
-  Revocation assists in key rolling as well as locking down systems in the
-  case of an intrusion.
+- **Revogação**: O OpenBao oferece suporte integrado para revogação de segredos.
+  O OpenBao pode revogar não apenas segredos individuais, mas também uma árvore
+  de segredos, por exemplo, todos os segredos lidos por uma pessoa usuária
+  específica ou todos os segredos de um determinado tipo.
+  A revogação auxilia na troca de chaves, bem como no bloqueio de sistemas em
+  caso de intrusão.
 
 :::info
 
-**Tip**: Learn more about OpenBao [use cases](use-cases.mdx).
+**Dica**: Saiba mais sobre os [casos de uso](use-cases.mdx) do OpenBao.
 
 :::
 
-### Community
+### Comunidade
 
-We welcome questions, suggestions, and contributions from the community.
+Agradecemos perguntas, sugestões e contribuições da comunidade.
 
-* Ask questions in [GitHub Discussions](https://github.com/orgs/openbao/discussions).
-* Read our [contributing guide](https://github.com/openbao/openbao/blob/main/CONTRIBUTING.md).
-* [Submit an issue](https://github.com/openbao/openbao/issues/new/choose) for bugs and feature requests.
+* Faça perguntas nas
+  [Discussões do GitHub](https://github.com/orgs/openbao/discussions).
+* Leia nosso
+  [guia de contribuição](https://github.com/openbao/openbao/blob/main/CONTRIBUTING.md).
+* [Abra uma issue](https://github.com/openbao/openbao/issues/new/choose) para
+  relatar bugs e solicitar novos recursos.
