@@ -6,74 +6,96 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-description: Learn how to store and retrieve your first secret.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/get-started/developer-qs.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+description: Aprenda como armazenar e recuperar seu primeiro segredo.
 ---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Developer quick start
+# Guia rápido para pessoas desenvolvedoras
 
-This quick start will explore how to use OpenBao client libraries inside your application code to store and retrieve your first secret value. OpenBao takes the security burden away from developers by providing a secure, centralized secret store for an application’s sensitive data: credentials, certificates, encryption keys, and more.
+Este guia rápido explorará como usar as bibliotecas de cliente do OpenBao no
+código da sua aplicação para armazenar e recuperar seu primeiro valor secreto.
+O OpenBao alivia as pessoas desenvolvedoras da responsabilidade pela segurança,
+fornecendo um armazenamento de segredos seguro e centralizado para os dados
+confidenciais de uma aplicação: credenciais, certificados, chaves de
+criptografia e muito mais.
 
-## Prerequisites
+## Pré-requisitos
 
-- A development environment applicable to one of the languages in this quick start (currently **Go** and **Bash (curl)**)
+- Um ambiente de desenvolvimento compatível com uma das linguagens deste guia
+  rápido (atualmente **Go** e **Bash (curl)**).
 
-## Step 1: start OpenBao
+## Passo 1: inicie o OpenBao
 
 :::danger
 
-**Warning**: This in-memory “dev” server is useful for practicing with OpenBao locally for the first time, but is insecure and **should never be used in production**.
+**Aviso**: Este servidor "dev" em memória é útil para praticar com o OpenBao
+localmente pela primeira vez, mas é inseguro e **nunca deve ser usado em
+produção**.
 
 :::
 
-Run the OpenBao server in a non-production "dev" mode:
+Execute o servidor OpenBao em um modo "dev" (não produção):
 
 ```shell-session
 $ bao server -dev -dev-root-token-id="dev-only-token"
 ```
 
-The `-dev-root-token-id` flag for dev servers tells the OpenBao server to allow full root access to anyone who presents a token with the specified value (in this case "dev-only-token").
+A flag `-dev-root-token-id` para servidores de desenvolvimento instrui o
+servidor OpenBao a permitir acesso root completo a qualquer pessoa que apresente
+um token com o valor especificado (neste caso, "dev-only-token").
 
 :::danger
 
-**Warning**: The [root token](../concepts/tokens.mdx#root-tokens) is useful for development, but allows full access to all data and functionality of OpenBao, so it must be carefully guarded in production. Ideally, even an administrator of OpenBao would use their own token with limited privileges instead of the root token.
+**Aviso**: O [token root](../concepts/tokens.mdx#root-tokens) é útil para
+desenvolvimento, mas permite acesso total a todos os dados e funcionalidades do
+OpenBao, portanto, deve ser cuidadosamente protegido em produção.
+Idealmente, mesmo uma pessoa administradora do OpenBao usaria seu próprio token
+com privilégios limitados em vez do token root.
 
 :::
 
-OpenBao is now listening over HTTP on port **8200**. With all the setup out of the way, it's time to get coding!
+O OpenBao agora está escutando em HTTP na porta **8200**.
+Com toda a configuração concluída, é hora de começar a programar!
 
-## Step 2: install a client library
+## Passo 2: instale uma biblioteca cliente
 
-To read and write secrets in your application, you need to first configure a client to connect to OpenBao.
-Let's install the OpenBao client library for your language of choice.
+Para ler e gravar segredos em sua aplicação, você precisa primeiro configurar um
+cliente para se conectar ao OpenBao.
+Vamos instalar a biblioteca cliente do OpenBao para a linguagem de sua escolha.
 
 <Tabs>
 <TabItem value="Go" group="go" heading="Go" group="go">
 
-[Go](https://pkg.go.dev/github.com/openbao/openbao/api) (official) client library:
+Biblioteca cliente [Go](https://pkg.go.dev/github.com/openbao/openbao/api)
+(oficial):
 
 ```shell-session
 $ go get github.com/openbao/openbao/api/v2
 ```
 
-Now, let's add the import statements for the client library to the top of the file.
+Agora, vamos adicionar as declarações de importação da biblioteca cliente no
+início do arquivo.
 
-```go title="import statements for client library" showLineNumbers
+```go title="declarações de importação da biblioteca cliente" showLineNumbers
 import openbao "github.com/openbao/openbao/api/v2"
 ```
 
 </TabItem>
 </Tabs>
 
+## Passo 3: autentique-se no OpenBao
 
-## Step 3: authenticate to OpenBao
-
-A variety of [authentication methods](../auth/index.mdx) can be used to prove
-your application's identity to the OpenBao server.  To keep things simple for
-our example, we'll just use the root token created in **Step 1**.  Paste the
-following code to initialize a new OpenBao client that will use token-based
-authentication for all its requests:
+Diversos [métodos de autenticação](../auth/index.mdx) podem ser usados para
+comprovar a identidade da sua aplicação para o servidor OpenBao.
+Para simplificar nosso exemplo, usaremos o token raiz criado na **Etapa 1**.
+Cole o código a seguir para inicializar um novo cliente OpenBao que usará
+autenticação baseada em token para todas as suas solicitações:
 
 <Tabs>
 <TabItem value="Go" heading="Go">
@@ -85,7 +107,7 @@ config.Address = "http://127.0.0.1:8200"
 
 client, err := openbao.NewClient(config)
 if err != nil {
-    log.Fatalf("unable to initialize OpenBao client: %v", err)
+    log.Fatalf("Não foi possível inicializar o cliente OpenBao: %v", err)
 }
 
 client.SetToken("dev-only-token")
@@ -101,11 +123,14 @@ $ export VAULT_TOKEN="dev-only-token"
 </TabItem>
 </Tabs>
 
-## Step 4: store a secret
+## Etapa 4: Armazene um segredo
 
-Secrets are sensitive data like API keys and passwords that we shouldn’t be storing in our code or configuration files. Instead, we want to store values like this in OpenBao.
+Segredos são dados sensíveis, como chaves de API e senhas, que não devemos
+armazenar em nosso código ou arquivos de configuração.
+Em vez disso, queremos armazenar esses valores no OpenBao.
 
-We'll use the OpenBao client we just initialized to write a secret to OpenBao, like so:
+Usaremos o cliente OpenBao que acabamos de inicializar para gravar um segredo no
+OpenBao, da seguinte forma:
 
 <Tabs>
 <TabItem value="Go" heading="Go">
@@ -118,10 +143,10 @@ secretData := map[string]interface{}{
 
 _, err = client.KVv2("secret").Put(context.Background(), "my-secret-password", secretData)
 if err != nil {
-    log.Fatalf("unable to write secret: %v", err)
+    log.Fatalf("Não foi possível escrever o segredo: %v", err)
 }
 
-fmt.Println("Secret written successfully.")
+fmt.Println("Segredo escrito com sucesso.")
 ```
 
 </TabItem>
@@ -134,23 +159,31 @@ $ curl \
     --request POST \
     --data '{"data": {"password": "OpenBao123"}}' \
     http://127.0.0.1:8200/v1/secret/data/my-secret-password &&
-    echo "Secret written successfully."
+    echo "Segredo escrito com sucesso."
 ```
 
 </TabItem>
 </Tabs>
 
-A common way of storing secrets is as key-value pairs using the [KV secrets engine (v2)](../secrets/kv/kv-v2.mdx). In the code we've just added, `password` is the key in the key-value pair, and `OpenBao123` is the value.
+Uma forma comum de armazenar segredos é como pares chave-valor usando o
+[mecanismo de segredos KV (v2)](../secrets/kv/kv-v2.mdx).
+No código que acabamos de adicionar, `password` é a chave no par chave-valor e
+`OpenBao123` é o valor.
 
-We also provided the path to our secret in OpenBao. We will reference this path in a moment when we learn how to retrieve our secret.
+Também fornecemos o caminho para o nosso segredo no OpenBao.
+Faremos referência a esse caminho em breve, quando aprendermos como recuperar
+nosso segredo.
 
-Run the code now, and you should see `Secret written successfully`. If not, check that you've used the correct value for the root token and OpenBao server address.
+Execute o código agora e você deverá ver `Segredo gravado com sucesso`.
+Caso contrário, verifique se você usou o valor correto para o token raiz e o
+endereço do servidor OpenBao.
 
-## Step 5: retrieve a secret
+## Passo 5: Recupere um segredo
 
-Now that we know how to write a secret, let's practice reading one.
+Agora que sabemos como escrever um segredo, vamos praticar a leitura de um.
 
-Underneath the line where you wrote a secret to OpenBao, let's add a few more lines, where we will be retrieving the secret and unpacking the value:
+Abaixo da linha onde você escreveu um segredo para o OpenBao, vamos adicionar
+mais algumas linhas, onde recuperaremos o segredo e descompactaremos o valor:
 
 <Tabs>
 <TabItem value="Go" heading="Go">
@@ -158,12 +191,12 @@ Underneath the line where you wrote a secret to OpenBao, let's add a few more li
 ```go
 secret, err := client.KVv2("secret").Get(context.Background(), "my-secret-password")
 if err != nil {
-    log.Fatalf("unable to read secret: %v", err)
+    log.Fatalf("Não foi possível ler o segredo: %v", err)
 }
 
 value, ok := secret.Data["password"].(string)
 if !ok {
-    log.Fatalf("value type assertion failed: %T %#v", secret.Data["password"], secret.Data["password"])
+    log.Fatalf("A asserção do tipo de valor falhou: %T %#v", secret.Data["password"], secret.Data["password"])
 }
 ```
 
@@ -179,20 +212,21 @@ $ curl \
 </TabItem>
 </Tabs>
 
-Last, confirm that the value we unpacked from the read response is correct:
+Por fim, confirme se o valor que extraímos da resposta de leitura está correto:
 
 <Tabs>
 <TabItem value="Go" heading="Go">
 
 ```go
 if value != "OpenBao123" {
-    log.Fatalf("unexpected password value %q retrieved from openbao", value)
+    log.Fatalf("Valor de senha inesperado %q recuperado do OpenBao.", value)
 }
 
-fmt.Println("Access granted!")
+fmt.Println("Acesso concedido!")
 ```
 
-If the secret was fetched successfully, you should see the `Access granted!` message after you run the code.
+Se o segredo foi obtido com sucesso, você deverá ver a mensagem
+`Acesso concedido!` após executar o código.
 
 </TabItem>
 <TabItem value="Bash" group="bash" heading="Bash" group="bash">
@@ -201,15 +235,17 @@ If the secret was fetched successfully, you should see the `Access granted!` mes
 $ cat secrets.json | jq '.data.data'
 ```
 
-If the secret was fetched successfully, it should return the string `OpenBao123`.
+Se o segredo foi obtido com sucesso, ele deve retornar a string `OpenBao123`.
 
 </TabItem>
 </Tabs>
 
-If not, check to see if you provided the correct path to your secret.
+Caso contrário, verifique se você forneceu o caminho correto para o seu segredo.
 
-**That's it! You've just written and retrieved your first OpenBao secret!**
+**Pronto! Você acabou de escrever e recuperar seu primeiro segredo OpenBao!**
 
-# Additional examples
+# Exemplos adicionais
 
-To learn how to integrate applications with OpenBao without needing to always change your application code, see the [OpenBao Agent](../agent-and-proxy/agent/index.mdx) documentation.
+Para aprender como integrar aplicações com o OpenBao sem precisar alterar o
+código da sua aplicação o tempo todo, consulte a documentação do
+[Agente OpenBao](../agent-and-proxy/agent/index.mdx).
