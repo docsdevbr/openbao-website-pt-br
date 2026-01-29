@@ -6,26 +6,30 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-description: |-
-  Download a precompiled binary, compile from source, or use a package.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/install.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+description: >-
+  Baixe um binário pré-compilado, compile a partir do código-fonte ou use um
+  pacote.
 ---
 
-# Installing OpenBao
+# Instalando o OpenBao
 
-There are several options to install OpenBao:
+Existem várias opções para instalar o OpenBao:
 
-1. Install from a [package manager](#package-manager).
+1. Instalar a partir de um [gerenciador de pacotes](#package-manager).
 
-1. Deploy using a [container registry](#container-registries).
+2. Implantar usando um [registro de contêineres](#container-registries).
 
-1. Use a [precompiled binary](#precompiled-binaries).
+3. Usar um [binário pré-compilado](#precompiled-binaries).
 
-1. Install [from source](#compiling-from-source).
+4. Instalar [a partir do código-fonte](#compiling-from-source).
 
-1. [Helm for Kubernetes](platform/k8s/helm/index.mdx)
+5. [Helm para Kubernetes](platform/k8s/helm/index.mdx).
 
-
-## Package manager
+## Gerenciador de pacotes
 
 ### Homebrew - MacOS
 
@@ -44,61 +48,66 @@ $ pkg install openbao
 
 :::info
 
-
-OpenBao does not yet have a package repository. For now you need to download and
-install packages manually.
+O OpenBao ainda não possui um repositório de pacotes.
+Por enquanto, você precisa baixar e instalar os pacotes manualmente.
 
 :::
 
-OpenBao manages packages for Ubuntu, Debian, Fedora, RHEL, Amazon Linux, and
-other distributions. [Download](/downloads) the appropriate package for your
-operating system and architecture.
+O OpenBao gerencia pacotes para Ubuntu, Debian, Fedora, RHEL, Amazon Linux e
+outras distribuições.
+[Baixe](/downloads) o pacote apropriado para o seu sistema operacional e
+arquitetura.
 
-## Container registries
+## Registros de contêineres
 
-OpenBao deploys pre-built container images based on [Alpine Linux](https://alpinelinux.org/)
-to the following registries:
+O OpenBao implanta imagens de contêineres pré-construídas baseadas no
+[Alpine Linux](https://alpinelinux.org/) nos seguintes registros:
 
  1. [`ghcr.io/openbao/openbao`](https://github.com/openbao/openbao/pkgs/container/openbao)
  1. [`quay.io/openbao/openbao`](https://quay.io/repository/openbao/openbao)
  1. [`docker.io/openbao/openbao`](https://hub.docker.com/r/openbao/openbao)
 
-For container images based on [RHEL UBI](https://www.redhat.com/en/blog/introducing-red-hat-universal-base-image),
-we push to the following registries:
-
+Para imagens de contêiner baseadas em
+[RHEL UBI](https://www.redhat.com/en/blog/introducing-red-hat-universal-base-image),
+publicamos nos seguintes registros:
 
  1. [`ghcr.io/openbao/openbao-ubi`](https://github.com/openbao/openbao/pkgs/container/openbao-ubi)
  1. [`quay.io/openbao/openbao-ubi`](https://quay.io/repository/openbao/openbao-ubi)
  1. [`docker.io/openbao/openbao-ubi`](https://hub.docker.com/r/openbao/openbao-ubi)
 
-## Precompiled binaries
+## Binários pré-compilados
 
-To install the precompiled binary, [download](/downloads) the applicable
-package for your system. OpenBao is packaged as a zip file.
+Para instalar o binário pré-compilado, [baixe](/downloads) o pacote apropriado
+para o seu sistema.
+O OpenBao é distribuído como um arquivo zip.
 
-Once the zip is downloaded, unzip the file into your designated directory. The `bao` binary
-inside is all that is necessary to run OpenBao (or `bao.exe` for Windows). No
-additional files are required to run OpenBao.
+Após o download do arquivo zip, descompacte-o no diretório desejado.
+O binário `bao` contido nele é tudo o que é necessário para executar o OpenBao
+(ou `bao.exe` para Windows).
+Nenhum arquivo adicional é necessário para executar o OpenBao.
 
-Copy the binary to your system. If you intend to access it from the
-command-line, ensure that you place the binary somewhere on your `PATH`.
+Copie o binário para o seu sistema.
+Se você pretende acessá-lo pela linha de comando, certifique-se de adicioná-lo
+ao seu `PATH`.
 
-## Compiling from source
+## Compilando a partir do código-fonte
 
 :::warning
 
-These instructions are for a **development** build; do not rely on them for
-release binaries.
+Estas instruções são para uma versão de **desenvolvimento**; não as utilize para
+binários de lançamento.
 
-Instead, [refer to our packaging guide](contributing/packaging.mdx).
+Em vez disso,
+[consulte nosso guia de empacotamento](contributing/packaging.mdx).
 
 :::
 
-To compile from source, you will need [Go](https://golang.org) installed and
-properly configured (including a `GOPATH` environment variable set), as well as
-a copy of [`git`](https://www.git-scm.com/) in your `PATH`.
+Para compilar a partir do código-fonte, você precisará ter o
+[Go](https://golang.org) instalado e devidamente configurado (incluindo a
+variável de ambiente `GOPATH` definida), bem como uma cópia do
+[`git`](https://www.git-scm.com/) em seu `PATH`.
 
-Clone the OpenBao repository from GitHub into your `GOPATH`:
+Clone o repositório OpenBao do GitHub para o seu `GOPATH`:
 
 ```shell-session
 $ mkdir -p $GOPATH/src/github.com/openbao && cd $_
@@ -106,89 +115,104 @@ $ git clone https://github.com/openbao/openbao.git
 $ cd openbao
 ```
 
-Bootstrap the project. This will download and compile libraries and tools needed
-to compile OpenBao:
+Inicialize o projeto.
+Isso fará o download e a compilação das bibliotecas e ferramentas necessárias
+para compilar o OpenBao:
 
 ```shell-session
 $ make bootstrap
 ```
 
-Build OpenBao for your current system and put the binary in `./bin/` (relative to
-the git checkout). The `make dev` target is just a shortcut that builds `bao`
-for only your local build environment (no cross-compiled targets).
+Compile o OpenBao para o seu sistema atual e coloque o binário em `./bin/`
+(relativo ao checkout do git).
+O alvo `make dev` é apenas um atalho que compila o `bao` somente para o seu
+ambiente de compilação local (sem alvos de compilação cruzada).
 
 ```shell-session
 $ make dev
 ```
 
-## Verifying the installation
+## Verificando a instalação
 
-To verify OpenBao is installed, run `bao -h` on your system. You should
-see the help output. If you are executing it from the command line, ensure it is
-on your `PATH` to avoid receiving an error that OpenBao is not found.
+Para verificar se o OpenBao está instalado, execute `bao -h` no seu sistema.
+Você deverá ver a saída de ajuda.
+Se estiver executando a partir da linha de comando, certifique-se de que ele
+esteja no seu `PATH` para evitar receber um erro informando que o OpenBao não
+foi encontrado.
 
 ```shell-session
 $ bao -h
 ```
 
-## Post-installation hardening
+## Reforço de segurança pós-instalação
 
-After installing OpenBao, you may want to take additional steps to secure it
-against leaking your secrets. OpenBao normally does this very well, but there
-is an operating system feature that undermines OpenBao's protection. This is
-[memory paging (aka swap)](https://en.wikipedia.org/wiki/Memory_paging). To
-provide extra security, you will want to make sure that your OS has swap
-disabled or that its swap space is encrypted.
+Após instalar o OpenBao, você pode querer tomar medidas adicionais para
+protegê-lo contra vazamento de seus segredos.
+O OpenBao normalmente faz isso muito bem, mas existe um recurso do sistema
+operacional que compromete a proteção do OpenBao.
+Trata-se da
+[paginação de memória (também conhecida como swap)](https://en.wikipedia.org/wiki/Memory_paging).
+Para fornecer segurança extra, você deve garantir que o swap do seu sistema
+operacional esteja desativado ou que seu espaço de swap esteja criptografado.
 
 ### Linux
 
-The example systemd service file provided with the OpenBao source code comes
-configured to disable swap for the OpenBao process. To verify that swap is
-disabled, run `systemctl cat openbao` and check for the line `MemorySwapMax=0`.
-Alternatively, to allow the openbao process to swap out, make sure that line is
-deleted.
+O arquivo de serviço systemd de exemplo fornecido com o código-fonte do OpenBao
+vem configurado para desabilitar o swap para o processo do OpenBao.
+Para verificar se o swap está desabilitado, execute `systemctl cat openbao` e
+verifique a linha `MemorySwapMax=0`.
+Alternativamente, para permitir que o processo do OpenBao use o swap,
+certifique-se de que essa linha seja excluída.
 
-If you are not using systemd, you can achieve the same effect by setting the
-cgroupv2 value `memory.swap.max` to `0` using your tool of choice. You can
-disable swap for the entire OS by running `swapoff` (this is not recommended).
-Encrypting swap space in Linux is possible, but as usual, there are many
-options, and a guide is outside the scope of these docs. Consult your distro's
-documentation.
+Se você não estiver usando o systemd, pode obter o mesmo efeito definindo o
+valor do cgroupv2 `memory.swap.max` como `0` usando a ferramenta de sua
+preferência.
+Você pode desabilitar o swap para todo o sistema operacional executando
+`swapoff` (isso não é recomendado).
+É possível criptografar o espaço de swap no Linux, mas, como de costume, existem
+muitas opções, e um guia está fora do escopo desta documentação.
+Consulte a documentação da sua distribuição.
 
-### BSDs and other Unix-like
+### BSDs e outros sistemas Unix-like
 
-It is recommended to confirm that swap is encrypted. This can be done on all the
-major BSDs.
- * [FreeBSD guide to encrypted swap](https://docs.freebsd.org/en/books/handbook/disks/#swap-encrypting)
- * [NetBSD guide to encrypted swap](https://netbsd.org/docs/guide/en/netbsd.html#chap-cgd-swap-encryption)
- * [OpenBSD info on encrypted swap (enabled by default)](https://man.openbsd.org/sysctl.2#VM_SWAPENCRYPT~2)
+Recomenda-se confirmar se a partição de swap está criptografada.
+Isso pode ser feito em todos os principais BSDs.
+
+* [Guia do FreeBSD para swap criptografado](https://docs.freebsd.org/en/books/handbook/disks/#swap-encrypting).
+* [Guia do NetBSD para swap criptografado](https://netbsd.org/docs/guide/en/netbsd.html#chap-cgd-swap-encryption).
+* [Informações do OpenBSD sobre swap criptografado (habilitado por padrão)](https://man.openbsd.org/sysctl.2#VM_SWAPENCRYPT~2).
 
 ### Windows
 
-You can check if your swap space is encrypted by opening Powershell and running:
+Você pode verificar se o seu espaço de swap está criptografado abrindo o
+PowerShell e executando:
+
 ```shell-session
 > fsutil behavior query encryptpagingfile
 ```
-If the value is 0 (that is, `DISABLED`), you are recommended to enable swap
-encryption by running:
+
+Se o valor for 0 (ou seja, `DISABLED`), recomenda-se habilitar a criptografia de
+swap executando:
+
 ```shell-session
 > fsutil behavior set encryptpagingfile 1
 ```
-Then reboot.
+
+Em seguida, reinicie.
 
 ### Docker
 
-When running the Docker image, include the flag `--memory-swappiness=0`.
+Ao executar a imagem do Docker, inclua a flag `--memory-swappiness=0`.
 
 ### macOS
 
-[The swap space on macOS is always encrypted](https://support.apple.com/guide/mac-help/what-is-secure-virtual-memory-on-mac-mh11852/mac).
+[O espaço de swap no macOS é sempre criptografado](https://support.apple.com/guide/mac-help/what-is-secure-virtual-memory-on-mac-mh11852/mac).
 
-## Checksum Verification
+## Verificação de Checksum
 
 ### SHA-256
 
-Download the release and checksum files:
+Baixe os arquivos de lançamento e checksum:
 
 ```shell-session
 $ OS="freebsd"
@@ -201,17 +225,18 @@ $ wget https://github.com/openbao/openbao/releases/download/v$VERSION/checksums-
 $ wget https://github.com/openbao/openbao/releases/download/v$VERSION/checksums-$OS.txt.gpgsig
 ```
 
-Verify the checksum using `sha256sum`:
+Verifique o checksum usando `sha256sum`:
 
 ```shell-session
 $ sha256sum --check checksums-$OS.txt 2>/dev/null
 ```
 
-## Signature Verification
+## Verificação de Assinatura
 
 ### GPG
 
-First, download our [GPG key](pathname:///assets/openbao-gpg-pub-20240618.asc) and import it:
+Primeiro, baixe nossa
+[chave GPG](pathname:///assets/openbao-gpg-pub-20240618.asc) e importe-a:
 
 ```shell-session
 $ wget https://openbao.org/assets/openbao-gpg-pub-20240618.asc
@@ -221,7 +246,9 @@ gpg: Total number processed: 1
 gpg:               imported: 1
 ```
 
-To verify GPG signed artifacts, use `gpg2` from the command line. For example, to verify `checksums-freebsd.txt` with the `checksums-freebsd.txt.gpgsig` stored locally:
+Para verificar artefatos assinados com GPG, use `gpg2` na linha de comando.
+Por exemplo, para verificar `checksums-freebsd.txt` com o arquivo
+`checksums-freebsd.txt.gpgsig` armazenado localmente:
 
 ```shell-session
 $ gpg2 --verify checksums-freebsd.txt.gpgsig checksums-freebsd.txt
@@ -234,11 +261,13 @@ Primary key fingerprint: 66D1 5FDD 8728 7219 C8E1  5478 D200 CD70 2853 E6D0
      Subkey fingerprint: E617 DCD4 065C 2AFC 0B2C  F7A7 BA8B C08C 0F69 1F94
 ```
 
-### Cosign and Rekor
+### Cosign e Rekor
 
-To verify Cosign signed artifacts, use `rekor-cli` or `curl` to [pull the entry from Rekor](https://edu.chainguard.dev/open-source/sigstore/rekor/how-to-verify-file-signatures-with-rekor-or-curl/).
+Para verificar artefatos assinados com Cosign, use `rekor-cli` ou `curl` para
+[obter a entrada do Rekor](https://edu.chainguard.dev/open-source/sigstore/rekor/how-to-verify-file-signatures-with-rekor-or-curl/).
 
-For example, to verify `checksums.txt` with the `checksums.txt.sig` stored locally:
+Por exemplo, para verificar `checksums.txt` com o `checksums.txt.sig` armazenado
+localmente:
 
 ```shell-session
 $ SHASUM="$(openssl sha256 -r checksums.txt | awk '{print $1}')"
