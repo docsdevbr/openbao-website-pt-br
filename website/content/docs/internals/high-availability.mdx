@@ -6,36 +6,47 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-description: Learn about the high availability design of OpenBao.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/high-availability.mdx
+revision: 75106a6a4fff8298c93627582e776b8c4b5fd9b2
+status: ready
+
+description: Saiba mais sobre o design de alta disponibilidade do OpenBao.
 ---
 
-# High Availability
+# Alta disponibilidade
 
-OpenBao can run in a High Availability (HA) mode to protect against outages by running multiple OpenBao servers.
+O OpenBao pode operar em modo de alta disponibilidade (HA) para proteção contra
+interrupções, executando múltiplos servidores OpenBao.
 
+# Visão geral do design
 
-# Design overview
+O principal objetivo do design de alta disponibilidade do OpenBao é minimizar o
+tempo de inatividade sem afetar a escalabilidade horizontal.
+O OpenBao é limitado pelos limites de E/S do backend de armazenamento, e não
+pelos requisitos de computação.
+Estar limitado pelos limites de E/S simplifica a abordagem de HA e evita
+coordenação complexa.
 
-The primary design goal for making OpenBao Highly Available is to
-minimize downtime without affecting horizontal scalability. OpenBao is
-bound by the IO limits of the storage backend rather than the compute
-requirements. Being bound by the IO limits simplifies the HA approach and avoids complex
-coordination.
+Backends de armazenamento, como o Integrated Storage, fornecem funções de
+coordenação adicionais, permitindo que o OpenBao opere em uma configuração de
+HA.
+Com suporte do backend, o OpenBao será executado automaticamente em modo HA sem
+necessidade de configuração adicional.
 
-Storage backends, such as Integrated Storage, provide additional coordinative
-functions enabling OpenBao to run in an HA configuration. Supported
-by the backend, OpenBao will automatically run in HA mode without further
-configuration.
+Ao operar em modo HA, os servidores OpenBao podem estar em dois estados: **em
+espera** e **ativo**.
+Para vários servidores OpenBao compartilhando um backend de armazenamento,
+apenas uma única instância fica ativa por vez.
+Todas as instâncias em espera são colocadas em espera quente.
 
-When running in HA mode, OpenBao servers have two states they
-can be in: **standby** and **active**. For multiple OpenBao servers sharing a storage
-backend, only a single instance is active at any time. All standby instances are placed in hot standbys.
+Somente o servidor ativo processa todas as requisições; o servidor em espera
+redireciona todas as requisições para um servidor OpenBao ativo.
 
-Only the active server processes all requests; the standby server redirects all requests to an active OpenBao server.
+Enquanto isso, se o servidor ativo for selado, falhar ou perder a conectividade
+de rede, um dos servidores OpenBao em espera se torna a instância ativa.
 
-Meanwhile, if the active server is sealed, fails, or loses network connectivity,
-then one of the standby OpenBao servers becomes the active instance.
+Observe que somente servidores OpenBao _sem selo_ podem atuar como em espera.
 
-Please note that only _unsealed_ OpenBao servers may act as a standby.
-If a server is in a sealed state, it cannot act as a standby. Servers in a sealed state cannot
- serve any requests if the active server fails.
+Se um servidor estiver selado, ele não poderá atuar como em espera.
+Servidores selados não podem atender a nenhuma requisição se o servidor ativo
+falhar.
