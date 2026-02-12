@@ -7,7 +7,7 @@
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
 source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/install.mdx
-revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+revision: 06390c8714d41ebef7af1e17b685853c3bc84853
 status: ready
 
 description: >-
@@ -46,17 +46,24 @@ $ pkg install openbao
 
 ### Linux
 
-:::info
-
-O OpenBao ainda não possui um repositório de pacotes.
-Por enquanto, você precisa baixar e instalar os pacotes manualmente.
-
-:::
-
 O OpenBao gerencia pacotes para Ubuntu, Debian, Fedora, RHEL, Amazon Linux e
 outras distribuições.
-[Baixe](/downloads) o pacote apropriado para o seu sistema operacional e
-arquitetura.
+Os pacotes estão disponíveis para download direto e por meio de gerenciadores de
+pacotes nativos na página de [downloads](/downloads).
+
+Além disso, os pacotes do OpenBao estão disponíveis diretamente no RHEL e no
+Fedora.
+Para o RHEL (e derivados), eles estão no EPEL, que pode ser habilitado por:
+
+```shell-session
+$ dnf install -y epel-release
+```
+
+e então instalado no RHEL ou Fedora por:
+
+```shell-session
+$ dnf install -y openbao
+```
 
 ## Registros de contêineres
 
