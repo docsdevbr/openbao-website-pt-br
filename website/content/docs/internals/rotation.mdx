@@ -6,83 +6,114 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-description: Learn about the details of key rotation within OpenBao.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/rotation.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+description: Saiba mais sobre os detalhes da rotação de chaves no OpenBao.
 ---
 
-# Key rotation
+# Rotação de chaves
 
-OpenBao has multiple encryption keys that are used for various purposes. These keys
-support rotation so that they can be periodically changed or in response to a potential
-leak or compromise. It is useful to first understand the [high-level architecture](architecture.mdx)
-before learning about key rotation.
+O OpenBao possui múltiplas chaves de criptografia usadas para diversos fins.
+Essas chaves suportam rotação para poderem ser alteradas periodicamente ou em
+resposta a um possível vazamento ou comprometimento.
+É útil primeiro entender a [arquitetura de alto nível](architecture.mdx) antes
+de aprender sobre rotação de chaves.
 
-As a review, OpenBao starts in a _sealed_ state. OpenBao is unsealed by providing the
-unseal keys. By default, OpenBao uses a technique known as [Shamir's secret sharing algorithm](https://en.wikipedia.org/wiki/Shamir's_Secret_Sharing)
-to split the root key into 5 shares, any 3 of which are required to reconstruct the root
-key. The root key is used to protect the encryption keyring, which is ultimately used
-to protect data written to the storage backend.
+Resumindo, o OpenBao inicia em um estado _selado_.
+O OpenBao é desbloqueado fornecendo as chaves de desbloqueio.
+Por padrão, o OpenBao usa uma técnica conhecida como
+[algoritmo de compartilhamento secreto de Shamir](https://en.wikipedia.org/wiki/Shamir's_Secret_Sharing)
+para dividir a chave raiz em 5 partes, sendo necessárias quaisquer 3 para
+reconstruir a chave raiz.
+A chave raiz é usada para proteger o chaveiro de criptografia, usado, em última
+instância, para proteger os dados gravados no backend de armazenamento.
 
-![Key Rotate](/img/openbao-key-rotate.png)
+![Rotação de chave](/img/openbao-key-rotate.png)
 
-To enable key rotation, we need to support changing the unseal keys, root key, and the
-backend encryption key.
+Para habilitar a rotação de chaves, precisamos dar suporte à alteração das
+chaves de desbloqueio, da chave raiz e da chave de criptografia de backend.
 
 :::warning
 
-Note: Historically these actions were split into two separate operations, `rekey` and
-`rotate`. To further enhance the clarity and address the ambiguity of the terms all
-key rotation processes described by the `rekey` verb were renamed to `rotate/<key-name>`
-instead.
+Nota: Historicamente, essas ações eram divididas em duas operações separadas:
+`rekey` e `rotate`.
+Para aumentar a clareza e resolver a ambiguidade dos termos, todos os processos
+de rotação de chaves descritos pelo verbo `rekey` foram renomeados para
+`rotate/<nome-da-chave>` em vez disso.
 
 :::
 
-The `rotate/root` operation is used to generate a new root key. When this is being done,
-it is possible to change the parameters of the key splitting, so that the number of shares
-and the threshold required to unseal can be changed. To perform a rotation a threshold of
-the current unseal keys must be provided. This is to prevent a single malicious operator
-from performing a rotation and invalidating the existing root key.
+A operação `rotate/root` é usada para gerar uma nova chave raiz.
+Quando isso está sendo feito, é possível alterar os parâmetros da divisão da
+chave, de modo que o número de partes e o limite necessário para desbloquear
+possam ser alterados.
+Para realizar uma rotação, um limite de chaves de desbloqueio atuais deve ser
+fornecido.
+Isso serve para impedir que uma única pessoa operadora maliciosa realize uma
+rotação e invalide a chave raiz existente.
 
-Performing a rotation is fairly straightforward. The rotation must be initialized with the
-new parameters for the split and threshold. Once initialized, the current unseal keys must
-be provided until the threshold is met. Once met, OpenBao will generate the new root key,
-perform the splitting, and re-encrypt the encryption key with the new root key. The new
-unseal keys are then provided to the operator, and the old unseal keys are no longer usable.
+Realizar uma rotação é bastante simples.
+A rotação deve ser inicializada com os novos parâmetros para a divisão e o
+limite.
+Uma vez inicializada, as chaves de desbloqueio atuais devem ser fornecidas até
+que o limite seja atingido.
+Assim que o limite for atingido, o OpenBao gerará a nova chave raiz, realizará a
+divisão e criptografará novamente a chave de criptografia com a nova chave raiz.
+As novas chaves de desbloqueio são então fornecidas à pessoa operadora, e as
+chaves de desbloqueio antigas não podem mais ser usadas.
 
-The `rotate/keyring` operation is used to change the encryption key used to protect data
-written to the storage backend. This key is never provided or visible to operators, who
-only have unseal keys. This simplifies the rotation, as it does not require the current
-key holders unlike the `rotate/root` operation. When `rotate/keyring` is triggered, a new
-encryption key is generated and added to a keyring. All new values written to the storage
-backend would be encrypted with the new key. Old values written with previous encryption
-keys can still be decrypted since older keys are saved in the keyring. This allows key
-rotation to be done online, without an expensive re-encryption process.
+A operação `rotate/keyring` é usada para alterar a chave de criptografia usada
+para proteger os dados gravados no backend de armazenamento.
+Essa chave nunca é fornecida ou está visível para as pessoas operadoras, que
+possuem apenas as chaves de desbloqueio.
+Isso simplifica a rotação, pois não requer as atuais pessoas detentoras das
+chaves, ao contrário da operação `rotate/root`.
+Quando `rotate/keyring` é acionada, uma nova chave de criptografia é gerada e
+adicionada a um chaveiro.
+Todos os novos valores gravados no backend de armazenamento serão criptografados
+com a nova chave.
+Valores antigos gravados com chaves de criptografia anteriores ainda podem ser
+descriptografados, pois as chaves antigas são salvas no chaveiro.
+Isso permite que a rotação de chaves seja feita online, sem um processo de
+recriptografia dispendioso.
 
-Both the `rotate/root` and `rotate/keyring` operations can be done online and in a highly
-available configuration. Only the active OpenBao instance can perform either of the
-operations but standby instances can still assume an active role after either operation.
-This is done by providing an online upgrade path for standby instances. If the current
-encryption key is `N` and a rotation installs `N+1`, OpenBao creates a special "upgrade"
-key, which provides the `N+1` encryption key protected by the `N` key. This upgrade key
-is only available for a few minutes enabling standby instances to do a periodic check for
-upgrades. This allows standby instances to update their keys and stay in-sync with the
-active OpenBao without requiring operators to perform another unseal.
+Tanto a operação `rotate/root` quanto a `rotate/keyring` podem ser realizadas
+online e em uma configuração de alta disponibilidade.
+Somente a instância ativa do OpenBao pode executar qualquer uma das operações,
+mas as instâncias em espera ainda podem assumir uma função ativa após qualquer
+uma das operações.
+Isso é feito fornecendo um caminho de atualização online para as instâncias em
+espera.
+Se a chave de criptografia atual for `N` e uma rotação instalar `N+1`, o OpenBao
+cria uma chave especial de "upgrade" que fornece a chave de criptografia `N+1`
+protegida pela chave `N`.
+Essa chave de atualização fica disponível apenas por alguns minutos, permitindo
+que as instâncias em espera façam uma verificação periódica de atualizações.
+Isso permite que as instâncias em espera atualizem suas chaves e permaneçam
+sincronizadas com o OpenBao ativo sem exigir que as pessoas operadoras realizem
+outro desbloqueio.
 
-The `rotate/keyring/config` endpoint is used to configure the number of operations or
-time interval between automatic rotations of the backend encryption key.
+O endpoint `rotate/keyring/config` é usado para configurar o número de operações
+ou o intervalo de tempo entre as rotações automáticas da chave de criptografia
+do backend.
 
-## NIST rotation guidance
+## Diretrizes de rotação do NIST
 
-Periodic rotation of the encryption keys is recommended, even in the absence of
-compromise. Due to the nature of the AES-256-GCM encryption used, keys should be
-rotated before approximately 2<sup>32</sup> encryptions have been performed, following
-the guidelines of NIST publication 800-38D.
+Recomenda-se a rotação periódica das chaves de criptografia, mesmo na ausência
+de comprometimento.
+Devido à natureza da criptografia AES-256-GCM utilizada, as chaves devem ser
+rotacionadas antes de aproximadamente 2<sup>32</sup> criptografias terem sido
+realizadas, seguindo as diretrizes da publicação 800-38D do NIST.
 
-OpenBao will automatically rotate the backend encryption key
-prior to reaching 2<sup>32</sup> encryption operations by default.
+O OpenBao rotacionará automaticamente a chave de criptografia do backend antes
+de atingir 2<sup>32</sup> operações de criptografia por padrão.
 
-Operators can estimate the number of encryptions by summing the following:
+As pessoas operadoras podem estimar o número de criptografias somando o
+seguinte:
 
-- The `vault.barrier.put` telemetry metric.
-- The `vault.token.creation` metric where the `token_type` label is `batch`.
-- The `merkle.flushDirty.num_pages` metric.
-- The WAL index.
+- A métrica de telemetria `vault.barrier.put`.
+- A métrica `vault.token.creation` onde o rótulo `token_type` é `batch`.
+- A métrica `merkle.flushDirty.num_pages`.
+- O índice WAL.
