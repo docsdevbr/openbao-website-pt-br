@@ -15,8 +15,8 @@ description: Saiba mais sobre o armazenamento Raft integrado no OpenBao.
 
 # Armazenamento integrado
 
-O OpenBao vem com um sistema de armazenamento nativo integrado.
-Este sistema de armazenamento não depende de sistemas de terceiros; ele
+O OpenBao vem com um backend de armazenamento nativo integrado.
+Este backend de armazenamento não depende de sistemas de terceiros; ele
 implementa alta disponibilidade e fornece fluxos de trabalho de
 backup/restauração.
 
@@ -185,7 +185,7 @@ conhecem o líder atual.
 Quando uma requisição de API chega a um servidor que não é líder, a requisição é
 encaminhada para o líder.
 
-Semelhante a outros sistemas de armazenamento, os dados gravados no log do Raft
+Semelhante a outros backends de armazenamento, os dados gravados no log do Raft
 e na FSM serão criptografados pela barreira do OpenBao.
 
 ### Gerenciamento de quórum
