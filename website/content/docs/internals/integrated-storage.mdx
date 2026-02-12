@@ -6,200 +6,253 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-description: Learn about the integrated Raft storage in OpenBao.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/integrated-storage.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+description: Saiba mais sobre o armazenamento Raft integrado no OpenBao.
 ---
 
-# Integrated Storage
+# Armazenamento integrado
 
-OpenBao comes integrated with a native storage backend system. This storage backend
-does not rely on any third party systems; it implements High Availability and
-provides backup/restore workflows.
+O OpenBao vem com um sistema de armazenamento nativo integrado.
+Este sistema de armazenamento não depende de sistemas de terceiros; ele
+implementa alta disponibilidade e fornece fluxos de trabalho de
+backup/restauração.
 
-## Consensus protocol
+## Protocolo de consenso
 
-OpenBao's Integrated Storage uses a [consensus
-protocol](<https://en.wikipedia.org/wiki/Consensus_(computer_science)>) to provide
-[Consistency](https://en.wikipedia.org/wiki/CAP_theorem) (as defined by CAP).
-The consensus protocol is based on ["Raft: In search of an Understandable
-Consensus Algorithm"](https://raft.github.io/raft.pdf). For a visual explanation
-of Raft, see [The Secret Lives of Data](http://thesecretlivesofdata.com/raft).
+O armazenamento integrado do OpenBao utiliza um
+[protocolo de consenso](<https://en.wikipedia.org/wiki/Consensus_(computer_science)>)
+para fornecer [consistência](https://en.wikipedia.org/wiki/CAP_theorem)
+(conforme definido pelo CAP).
+O protocolo de consenso é baseado no
+["Raft: Em busca de um algoritmo de consenso compreensível"](https://raft.github.io/raft.pdf).
+Para uma explicação visual do Raft, consulte
+[The Secret Lives of Data](http://thesecretlivesofdata.com/raft).
 
-### Raft protocol overview
+### Visão geral do protocolo Raft
 
-Raft is a consensus algorithm that is based on
-[Paxos](https://en.wikipedia.org/wiki/Paxos_%28computer_science%29). Compared
-to Paxos, Raft is designed to have fewer states and a simpler, more
-understandable algorithm.
+O Raft é um algoritmo de consenso baseado no
+[Paxos](https://en.wikipedia.org/wiki/Paxos_%28computer_science%29).
+Em comparação com o Paxos, o Raft foi projetado para ter menos estados e um
+algoritmo mais simples e fácil de entender.
 
-The Raft protocol will not be fully covered here. However, a high level description is
-provided to help you build a mental model. Refer to the
-complete specification that's described in [this paper](https://raft.github.io/raft.pdf).
+O protocolo Raft não será totalmente abordado aqui.
+No entanto, uma descrição geral é fornecida para ajudar você a construir um
+modelo mental.
+Consulte a especificação completa descrita
+[neste artigo](https://raft.github.io/raft.pdf).
 
-#### Terminology
+#### Terminologia
 
-There are a few key terms to know when discussing Raft:
+Existem alguns termos-chave importantes para entender ao discutir o Raft:
 
-- **Leader** - At any given time, the peer set elects a single node to be the leader.
-The leader is responsible for ingesting new log entries, replicating to followers,
-and managing when an entry is committed. The leader node is also the active OpenBao node and followers are standby nodes. Refer to the [High Availability](high-availability.mdx#design-overview) document for more information.
+- **Líder** - A qualquer momento, o conjunto de nós pares elege um único nó para
+  ser o líder.
+  O líder é responsável por ingerir novas entradas de log, replicá-las para os
+  seguidores e gerenciar quando uma entrada é confirmada.
+  O nó líder também é o nó OpenBao ativo e os seguidores são nós de espera.
+  Consulte o documento [Alta disponibilidade](high-availability.mdx#visão-geral-do-design)
+  para obter mais informações.
 
-- **Log** - An ordered sequence of entries (replicated log) to keep track of any cluster changes. The leader is responsible for _log replication_. When new data is written, for example, a new event creates a log entry. The leader then sends the new log entry to its followers. Any inconsistency within the replicated log entries will indicate an issue.
+- **Log** - Uma sequência ordenada de entradas (logs replicados) para acompanhar
+  quaisquer alterações no cluster.
+  O líder é responsável pela _replicação de logs_.
+  Quando novos dados são gravados, por exemplo, um novo evento cria uma entrada
+  de log.
+  O líder então envia a nova entrada de log para seus seguidores.
+  Qualquer inconsistência nas entradas de log replicadas indicará um problema.
 
-- **FSM** - [Finite State Machine](https://en.wikipedia.org/wiki/Finite-state_machine).
-  A collection of finite states with transitions between them. As new logs
-  are applied, the FSM is allowed to transition between states. Application of the
-  same sequence of logs must result in the same state, meaning behavior must be deterministic.
+- **FSM** -
+  [Máquina de Estados Finitos](https://en.wikipedia.org/wiki/Finite-state_machine).
+  Uma coleção de estados finitos com transições entre eles.
+  À medida que novos logs são aplicados, a FSM pode transitar entre os estados.
+  A aplicação da mesma sequência de logs deve resultar no mesmo estado, o que
+  significa que o comportamento deve ser determinístico.
 
-- **Peer set** - The set of all members participating in log replication. All server nodes are in the peer set of the local cluster.
+- **Conjunto de pares** - O conjunto de todos os membros que participam da
+  replicação de logs.
+  Todos os nós servidores estão no conjunto de pares do cluster local.
 
-- **Quorum** - A majority of members from a peer set: for a set of size `n`,
-  quorum requires at least `(n+1)/2` members. For example, if there are 5 members
-  in the peer set, we would need 3 nodes to form a quorum. If a quorum of nodes is
-  unavailable for any reason, the cluster becomes _unavailable_ and no new logs
-  can be committed.
+- **Quórum** - A maioria dos membros de um conjunto de pares: para um conjunto
+  de tamanho `n`, o quórum requer pelo menos `(n+1)/2` membros.
+  Por exemplo, se houver 5 membros no conjunto de pares, precisaríamos de 3 nós
+  para formar um quórum.
+  Se um quórum de nós estiver indisponível por qualquer motivo, o cluster fica
+  _indisponível_ e nenhum novo log pode ser confirmado.
 
-- **Committed Entry** - An entry is considered _committed_ when it is durably stored
-  on a quorum of nodes. An entry is applied once its committed.
+- **Entrada confirmada** - Uma entrada é considerada _confirmada_ quando é
+  armazenada de forma permanente em um quórum de nós.
+  Uma entrada é aplicada assim que é confirmada.
 
-#### Node states
+#### Estados dos nós
 
-Raft nodes are always in one of three states: follower, candidate, or leader. All
-nodes initially start out as a follower. In this state, nodes can accept log entries
-from a leader and cast votes. If no entries are received for a period of time, nodes
-will self-promote to the candidate state. In the candidate state, nodes request votes from their peers. If a candidate receives a quorum of votes, then it is promoted to a leader. The leader must accept new log entries and replicate to all the other followers.
+Os nós do Raft estão sempre em um dos três estados: seguidor, candidato ou
+líder.
+Todos os nós começam como seguidores.
+Nesse estado, os nós podem aceitar entradas de log de um líder e votar.
+Se nenhuma entrada for recebida por um período, os nós se autopromovem ao estado
+de candidato.
+No estado de candidato, os nós solicitam votos de seus pares.
+Se um candidato receber um quórum de votos, ele é promovido a líder.
+O líder deve aceitar novas entradas de log e replicá-las para todos os outros
+seguidores.
 
-#### Writing logs
+#### Gravação de logs
 
-Once a cluster has a leader, it is able to accept new log entries. A client can
-request that a leader append a new log entry (from Raft's perspective, a log entry
-is an opaque binary blob). The leader then writes the entry to durable storage and
-attempts to replicate to a quorum of followers. Once the log entry is considered
-_committed_, it can be _applied_ to a finite state machine. The finite state machine
-is application specific; in OpenBao's case, we use
-[BoltDB](https://github.com/etcd-io/bbolt) to maintain a cluster state. OpenBao's writes
-are blocked until they are _committed_ and _applied_.
+Assim que um cluster tem um líder, ele pode aceitar novas entradas de log.
+Um cliente pode solicitar que um líder adicione uma nova entrada de log (da
+perspectiva do Raft, uma entrada de log é um blob binário opaco).
+O líder então grava a entrada de log em um armazenamento durável e tenta
+replicá-la para um quórum de seguidores.
+Assim que a entrada de log for considerada _confirmada_, ela poderá ser
+_aplicada_ a uma máquina de estados finitos.
+A máquina de estados finitos é específica da aplicação; no caso do OpenBao,
+usamos o [BoltDB](https://github.com/etcd-io/bbolt) para manter o estado do
+cluster.
+As gravações do OpenBao ficam bloqueadas até serem _confirmadas_ e _aplicadas_.
 
-#### Compacting logs
+#### Compactação de logs
 
-It would be undesirable to allow a replicated log to grow in an unbounded
-fashion. Raft provides a mechanism by which the current state is saved to
-snapshots and its related logs are compacted. Because of the FSM abstraction,
-restoring the state of the FSM must result in the same state as a replay of old
-logs. This allows Raft to capture the FSM state at a point in time and then remove
-all the logs that were used to reach that state. This is performed automatically
-without user intervention and prevents unbounded disk usage while also minimizing
-the time spent replaying logs. One of the advantages of using BoltDB is that it
-allows OpenBao's snapshots to be very light weight. Since OpenBao's data is already
-persisted to disk in BoltDB, the snapshot process just needs to truncate the raft logs.
+Seria indesejável permitir que um log replicado crescesse de forma ilimitada.
+O Raft fornece um mecanismo pelo qual o estado atual é salvo em snapshots e seus
+logs relacionados são compactados.
+Devido à abstração da Máquina de Estados Finitos (FSM), restaurar o estado da
+FSM deve resultar no mesmo estado que uma reprodução de logs antigos.
+Isso permite que o Raft capture o estado da FSM em um ponto no tempo e, em
+seguida, remova todos os logs usados para atingir esse estado.
+Isso é realizado automaticamente, sem intervenção da pessoa usuária, e evita o
+uso ilimitado de disco, além de minimizar o tempo gasto na reprodução de logs.
+Uma das vantagens de usar o BoltDB é que ele permite que os snapshots do OpenBao
+sejam muito leves.
+Como os dados do OpenBao já estão persistidos em disco no BoltDB, o processo de
+snapshot só precisa truncar os logs do Raft.
 
-#### Quorum
+#### Quórum
 
-Consensus is fault-tolerant while a cluster has quorum.
-If a quorum of nodes is unavailable, it is impossible to process log entries or reason
-about peer membership. For example, suppose there are only 2 peers: A and B. The quorum
-size is also 2, meaning both nodes must agree to commit a log entry. If either A or B
-fails, it is now impossible to reach quorum. This means the cluster is unable to add
-or remove a node or to commit any additional log entries. This results in
-_unavailability_. At this point, manual intervention is required to remove
-either A or B and restart the remaining node in bootstrap mode.
+O consenso é tolerante a falhas enquanto um cluster tiver quórum.
+Se um quórum de nós não estiver disponível, é impossível processar entradas de
+log ou inferir sobre a associação de pares.
+Por exemplo, suponha que haja apenas 2 pares: A e B.
+O tamanho do quórum também é 2, o que significa que ambos os nós devem concordar
+em confirmar uma entrada de log.
+Se A ou B falhar, torna-se impossível atingir o quórum.
+Isso significa que o cluster não consegue adicionar ou remover um nó, nem
+confirmar entradas de log adicionais.
+Isso resulta em _indisponibilidade_.
+Nesse ponto, é necessária intervenção manual para remover A ou B e reiniciar o
+nó restante no modo de inicialização.
 
-A Raft cluster of 3 nodes can tolerate a single node failure while a cluster of
-5 can tolerate 2 node failures. The recommended OpenBao production deployment is
-to run 5 OpenBao servers per cluster. See the [Minimum &
-Scaling](#minimums--scaling) and [Deployment Table](#deployment-table) to learn
-more about the failure tolerance using Integrated Storage.
+Um cluster Raft de 3 nós pode tolerar a falha de um único nó, enquanto um
+cluster de 5 nós pode tolerar a falha de 2 nós.
+A implantação de produção recomendada do OpenBao é executar 5 servidores OpenBao
+por cluster.
+Consulte a
+[Tabela de escalonamento mínimo e escalabilidade](#tabela-de-escalonamento-mínimo-e-escalabilidade)
+e a [Tabela de implantação](#tabela-de-implantação) para saber mais sobre a
+tolerância a falhas usando o armazenamento integrado.
 
-#### Performance
+#### Desempenho
 
-In terms of performance, Raft is comparable to Paxos. Assuming stable leadership,
-committing a log entry requires a single round trip to half of the cluster.
-Thus, performance is bound by disk I/O and network latency.
+Em termos de desempenho, o Raft é comparável ao Paxos.
+Supondo uma liderança estável, a confirmação de uma entrada de log requer uma
+única viagem de ida e volta para metade do cluster.
+Portanto, o desempenho é limitado pela E/S de disco e pela latência de rede.
 
-### Raft in OpenBao
+### Raft no OpenBao
 
-When getting started, a single OpenBao server is
-[initialized](../commands/operator/init.mdx#operator-init). At this point, the
-cluster is of size 1, which allows the node to self-elect as a leader. Once a
-leader is elected, other servers can be added to the peer set in a way that
-preserves consistency and safety.
+Ao iniciar, um único servidor OpenBao é
+[inicializado](../commands/operator/init.mdx#operator-init).
+Neste ponto, o cluster tem tamanho 1, o que permite que o nó se autoeleja como
+líder.
+Uma vez que um líder é eleito, outros servidores podem ser adicionados ao
+conjunto de pares de uma forma que preserve a consistência e a segurança.
 
-The join process is how new nodes are added to the OpenBao cluster; it uses an
-encrypted challenge/answer workflow. To accomplish this, all nodes in a single
-Raft cluster must share the same seal configuration. If using an Auto Unseal, the
-join process can use the configured seal to automatically decrypt the challenge
-and respond with the answer. If using a Shamir seal, the unseal keys must be
-provided to the node attempting to join the cluster before it can decrypt the
-challenge and respond with the decrypted answer.
+O processo de ingresso é como novos nós são adicionados ao cluster OpenBao; ele
+usa um fluxo de trabalho de desafio/resposta criptografado.
+Para isso, todos os nós em um único cluster Raft devem compartilhar a mesma
+configuração de selo.
+Se estiver usando uma retirada automática de selo, o processo de ingresso pode
+usar o selo configurado para descriptografar automaticamente o desafio e
+responder com a resposta.
+Se estiver usando um selo de Shamir, as chaves de retirada de selo devem ser
+fornecidas ao nó que tenta ingressar no cluster antes que ele possa
+descriptografar o desafio e responder com a resposta descriptografada.
 
-Since all servers participate as part of the peer set, they all know the current
-leader. When an API request arrives at a non-leader server, the request is
-forwarded to the leader.
+Como todos os servidores participam como parte do conjunto de pares, todos eles
+conhecem o líder atual.
+Quando uma requisição de API chega a um servidor que não é líder, a requisição é
+encaminhada para o líder.
 
-Similar to other storage backends, data that is written to the Raft log and FSM
-will be encrypted by OpenBao's barrier.
+Semelhante a outros sistemas de armazenamento, os dados gravados no log do Raft
+e na FSM serão criptografados pela barreira do OpenBao.
 
-### Quorum management
+### Gerenciamento de quórum
 
 #### Autopilot
 
-An [Autopilot feature](../concepts/integrated-storage/autopilot.mdx)
-is available in HashiCorp Vault 1.7.x & later versions that includes configurable parameters
-for when a node is treated as healthy before it's considered an eligible voter in the
-quorum list. Other features which may be enabled include the ability to remove nodes
-considered as dead from the quorum list after a certain period.
+Um recurso [Autopilot](../concepts/integrated-storage/autopilot.mdx) está
+disponível no HashiCorp Vault 1.7.x e versões posteriores, que inclui parâmetros
+configuráveis para quando um nó é tratado como saudável antes de ser considerado
+um votante elegível na lista de quórum.
+Outros recursos que podem ser habilitados incluem a capacidade de remover nós
+considerados inativos da lista de quórum após um determinado período.
 
-Autopilot is enabled by default and the default configuration values
-should work well for most OpenBao deployments, but they can be changed if needed.
+O Autopilot está habilitado por padrão e os valores de configuração padrão devem
+funcionar bem para a maioria das implementações do OpenBao, mas podem ser
+alterados, se necessário.
 
-Autopilot includes stabilization logic for nodes joining the cluster.
-Recently joined nodes are
-accepted as non-voters initially until they are in sync with matching Raft index
-and only after reaching a stability threshold are they then full voting members.
-Setting the stability threshold too low can result in cluster instability as nodes will be
-counted as voters before they are capable of voting.
+O Autopilot inclui lógica de estabilização para nós que ingressam no cluster.
+Nós recém-ingressados são aceitos inicialmente como não votantes até que estejam
+sincronizados com o índice Raft correspondente e somente após atingirem um
+limite de estabilidade se tornam membros votantes plenos.
+Definir o limite de estabilidade muito baixo pode resultar em instabilidade do
+cluster, pois os nós serão contados como votantes antes de serem capazes de
+votar.
 
-A dead server cleanup capability is available. With this feature
-enabled, unhealthy nodes are automatically removed from the Raft cluster without
-manual operator intervention. This is enabled via the [Autopilot API](/api-docs/system/storage/raftautopilot).
-If you wish to decommission a node manually, this can be done with the
-`remove peer` [command](../commands/operator/raft.mdx#remove-peer).
+Está disponível uma funcionalidade de limpeza de servidores inativos.
+Com essa funcionalidade habilitada, os nós com problemas são removidos
+automaticamente do cluster Raft sem intervenção manual da pessoa operadora.
+Isso é habilitado por meio da [API do Autopilot](/api-docs/system/storage/raftautopilot).
+Caso deseje desativar um nó manualmente, isso pode ser feito com o
+[comando](../commands/operator/raft.mdx#remove-peer) `remove peer`.
 
-#### Without autopilot
+#### Sem piloto automático
 
-In scenarios involving those when a node joins a Raft cluster, it attempts to
-catch up with the rest of the nodes through the data that it's replicating from
-the leader. While in this initial synchronisation state, the node cannot
-vote but is counted for the purposes of quorum. If a number of new nodes join
-the cluster simultaneously or at similar times, and thereby exceeding the failure
-tolerance of the cluster, quorum may be lost and the cluster can fail.
+Em cenários que envolvem a entrada de um nó em um cluster Raft, ele tenta
+alcançar os demais nós por meio dos dados que está replicando do líder.
+Enquanto estiver nesse estado inicial de sincronização, o nó não pode votar, mas
+é contabilizado para fins de quórum.
+Se vários novos nós entrarem no cluster simultaneamente ou em momentos
+semelhantes, excedendo assim a tolerância a falhas do cluster, o quórum pode ser
+perdido e o cluster pode falhar.
 
-For example, consider a scenario where there is a 3-node cluster with a large
-amount of data and a failure tolerance of 1. An additional 3 new nodes then
-join the cluster. The cluster now consists of 6 nodes with a failure tolerance
-of 2, but since all 3 nodes are still catching up, this will result in a loss of
-quorum.
+Por exemplo, considere um cenário com um cluster de 3 nós com uma abundância de
+dados e uma tolerância a falhas de 1.
+Mais 3 novos nós entram no cluster.
+O cluster agora consiste em 6 nós com uma tolerância a falhas de 2, mas como
+todos os 3 nós continuam se sincronizando, isso resultará em uma perda de
+quórum.
 
-* A 3 node cluster with a large amount of data that's at a failure tolerance of 1.
-* Another 3 new nodes then join the cluster together.
-* Now the cluster consists of 6 nodes with a failure tolerance of 2, but all 3 new nodes are still catching up, resulting in a loss of quorum.
+Por esse motivo, recomendamos garantir que os novos nós tenham índices Raft que
+estejam próximos ao líder antes de adicionar nós adicionais.
+Os índices Raft podem ser visualizados através do comando `bao status`.
 
-For this reason, we recommend ensuring new nodes have Raft indexes that are
-close to the leader before adding additional nodes. Raft indexes are visible via
-`bao status`.
+### Tabela de implantação
 
-### Deployment table
-
-Below is a table that shows quorum size and failure tolerance for various
-cluster sizes. The recommended production deployment consists of 5 servers. A
-single server deployment is _**highly**_ discouraged as data loss is inevitable
-in a failure scenario.
+Abaixo está uma tabela que mostra o tamanho do quórum e a tolerância a falhas
+para vários tamanhos de cluster.
+A implantação de produção recomendada consiste em 5 servidores.
+Uma implantação com um único servidor é _**altamente**_ desencorajada, pois a
+perda de dados é inevitável em um cenário de falha.
 
 <table class="table table-bordered table-striped">
   <thead>
     <tr>
-      <th>Servers</th>
-      <th>Quorum Size</th>
-      <th>Failure Tolerance</th>
+      <th>Servidores</th>
+      <th>Tamanho do quórum</th>
+      <th>Tolerância a falhas</th>
     </tr>
   </thead>
   <tbody>
@@ -241,28 +294,30 @@ in a failure scenario.
   </tbody>
 </table>
 
-### Minimums & scaling
+### Mínimos e escalonamento
 
-The OpenBao Reference Architecture recommends a 5 node cluster
-to ensure a minimum failure tolerance of at least 2.
+A Arquitetura de Referência do OpenBao recomenda um cluster de 5 nós para
+garantir uma tolerância mínima a falhas de pelo menos 2.
 
-It is good practise, wherever possible, to retain a failure tolerance of 2 or
-more.
+É uma boa prática, sempre que possível, manter uma tolerância a falhas de 2 ou
+mais.
 
-A scaling approach can be pursued in the event of maintenance and other changes
-where an additional pair of nodes (ie two) are added in an existing 5 node cluster
-making for a 7 node cluster. Once new joiners are confirmed to be in sync then
-the 2 older nodes can be stopped and or destroyed with the same processes being
-repeated until all other nodes have been replaced. This use of additional nodes
-on a temporary basis of a 7 node cluster arrangement, concluding back to 5 nodes,
-may be one way to ensure sufficient failure tolerance is maintained and that
-changes are made progressively in proportion to the cluster failure tolerance and
-never exceeding the available failure tolerance in any given time.
+Uma abordagem de escalonamento pode ser adotada em caso de manutenção e outras
+alterações, onde um par adicional de nós (ou seja, dois) é adicionado a um
+cluster existente de 5 nós, formando um cluster de 7 nós.
+Assim que os novos nós forem confirmados como sincronizados, os 2 nós mais
+antigos podem ser interrompidos e/ou destruídos, com os mesmos processos sendo
+repetidos até que todos os outros nós tenham sido substituídos.
+Este uso de nós adicionais temporariamente em um cluster de 7 nós, retornando
+posteriormente a 5 nós, pode ser uma maneira de garantir que a tolerância a
+falhas seja mantida de forma suficiente e que as alterações sejam feitas
+progressivamente, em proporção à tolerância a falhas do cluster, nunca excedendo
+a tolerância a falhas disponível em qualquer momento.
 
-The intent with any change or scaling ought to be with the loss of quorum and
-reduction of the quorum failure tolerances at the forefront and discouraging
-any practises that compromise that.
+A intenção de qualquer alteração ou escalonamento deve ser evitar a perda de
+quórum e a redução das tolerâncias a falhas do quórum na frente, desencorajando
+quaisquer práticas que comprometam isso.
 
-Scaling clusters up or down in pairs with 2 nodes each time also has the added
-advantage of avoiding even numbers and it is always recommended to
-allow for an odd number of total voters in any cluster.
+Escalar clusters para cima ou para baixo em pares de 2 nós de cada vez também
+tem a vantagem adicional de evitar números pares, sendo sempre recomendável
+permitir um número ímpar de votantes em qualquer cluster.
