@@ -6,42 +6,48 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-sidebar_label: Enable telemetry gathering
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/telemetry/enable-telemetry.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+sidebar_label: Habilite a coleta de telemetria
 description: >-
-  Step-by-step guide to enabling telemetry gathering with OpenBao
+  Guia passo a passo para habilitar a coleta de telemetria com o OpenBao.
 ---
 
-# Enable OpenBao telemetry gathering
+# Habilite a coleta de telemetria do OpenBao
 
-Collect telemetry data from your OpenBao installation.
+Colete dados de telemetria da sua instalação do OpenBao.
 
-## Before you start
+## Antes de começar
 
-- **You must have access to your [OpenBao configuration](../../configuration/index.mdx) file**.
+- **Você precisa ter acesso ao seu
+  [arquivo de configuração do OpenBao](../../configuration/index.mdx)**.
 
-
-## Step 1: Choose an aggregation agent
+## Passo 1: Escolha um agente de agregação
 
 @include 'telemetry/supported-aggregation-agents.mdx'
 
-## Step 2: Enable at least one audit device
+## Passo 2: Habilite pelo menos um dispositivo de auditoria
 
-To include audit-related metrics, you must enable auditing on at least one device
-with the `bao audit enable` command. For example, to enable auditing for the
-`file` device and save the logs to `/var/log/openbao_audit.log`:
+Para incluir métricas relacionadas à auditoria, você precisa habilitar a
+auditoria em pelo menos um dispositivo com o comando `bao audit enable`.
+Por exemplo, para habilitar a auditoria para o dispositivo `file` e salvar os
+logs em `/var/log/openbao_audit.log`:
 
 ```shell-session
 $ bao audit enable file file_path=/var/log/openbao_audit.log
 ```
 
-## Step 3: Configure telemetry collection
+## Passo 3: Configure a coleta de telemetria
 
-To configure telemetry collection, update the telemetry stanza in your OpenBao
-configuration with your collection preferences and aggregation agent details.
+Para configurar a coleta de telemetria, atualize a seção de telemetria na sua
+configuração do OpenBao com suas preferências de coleta e detalhes do agente de
+agregação.
 
-For example, the following `telemetry` stanza configures OpenBao with the standard
-telemetry defaults and connects it to a Statsite agent running on the default
-port within a company intranet at `mycompany.statsite`:
+Por exemplo, a seguinte stanza `telemetry` configura o OpenBao com as
+configurações padrão de telemetria e o conecta a um agente Statsite em execução
+na porta padrão dentro da intranet de uma empresa em `minhaempresa.statsite`:
 
 ```hcl
 telemetry {
@@ -54,16 +60,17 @@ telemetry {
   add_lease_metrics_namespace_labels = false
   filter_default = true
 
-  statsite_address = "mycompany.statsite:8125"
+  statsite_address = "minhaempresa.statsite:8125"
 }
 ```
 
-Many metrics solutions charge by the metric. You can set `filter_default` to
-false and use the `prefix_filter` parameter to include and exclude specific
-values based on metric name to avoid paying for irrelevant information.
+Muitas soluções de métricas cobram por métrica.
+Você pode definir `filter_default` como false e usar o parâmetro `prefix_filter`
+para incluir e excluir valores específicos com base no nome da métrica para
+evitar pagar por informações irrelevantes.
 
-For example, to limit your telemetry to the core token metrics plus the number
-of leases set to expire:
+Por exemplo, para limitar sua telemetria às métricas principais do token mais o
+número de concessões com vencimento definido:
 
 ```hcl
 telemetry {
@@ -72,14 +79,14 @@ telemetry {
 }
 ```
 
-## Step 4: Choose a reporting solution
+## Passo 4: Escolha uma solução de relatório
 
-You need to save or forward your telemetry data to a separate storage solution
-for reporting, analysis, and alerting. Which solution you need depends on the
-feature set provided by your aggregation agent and the protocol support of your
-reporting platform.
+Você precisa salvar ou encaminhar seus dados de telemetria para uma solução de
+armazenamento separada para geração de relatórios, análise e alertas.
+A solução necessária depende do conjunto de recursos fornecido pelo seu agente
+de agregação e do suporte a protocolos da sua plataforma de relatórios.
 
-Popular reporting solutions compatible with OpenBao:
+Soluções populares de geração de relatórios compatíveis com o OpenBao:
 
 - [Grafana](https://grafana.com/grafana)
 - [Graphite](https://www.hostedgraphite.com)
@@ -89,8 +96,8 @@ Popular reporting solutions compatible with OpenBao:
 - [InfluxData: Kapacitor](https://www.influxdata.com/time-series-platform/kapacitor)
 - [Splunk](https://www.splunk.com)
 
+## Próximos passos
 
-## Next steps
-
-- Review the full list of available
-  [telemetry parameters](../../configuration/telemetry.mdx#telemetry-parameters).
+- Revise a lista completa de
+  [parâmetros de telemetria](../../configuration/telemetry.mdx#telemetry-parameters)
+  disponíveis.
