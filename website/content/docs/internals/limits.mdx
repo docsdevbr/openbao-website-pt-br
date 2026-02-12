@@ -6,305 +6,343 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-sidebar_label: Limits and maximums
-description: Learn about the maximum number of objects within OpenBao.
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/limits.mdx
+revision: e2d983ae2d1c12cf83887e1899ee1b0fb98373d9
+status: ready
+
+sidebar_label: Limites e máximos
+description: Saiba mais sobre o número máximo de objetos no OpenBao.
 ---
 
-# OpenBao limits and maximums
+# Limites e máximos do OpenBao
 
-OpenBao imposes fixed upper limits on the size of certain fields and
-objects, and configurable limits on others. OpenBao also has upper
-bounds that are a consequence of its underlying storage. This page
-attempts to collect these limits, to assist in planning OpenBao
-deployments.
+O OpenBao impõe limites superiores fixos ao tamanho de certos campos e objetos,
+e limites configuráveis para outros.
+O OpenBao também possui limites superiores que são consequência do seu
+armazenamento subjacente.
+Esta página busca reunir esses limites para auxiliar no planejamento de
+implantações do OpenBao.
 
-In some cases, the system will show performance problems in advance of
-the absolute limits being reached.
+Em alguns casos, o sistema apresentará problemas de desempenho antes mesmo de
+os limites absolutos serem atingidos.
 
-## Storage-Related limits
+## Limites relacionados ao armazenamento
 
-### Storage entry size
+### Tamanho da entrada de armazenamento
 
-The maximum size of an object written to a storage backend is determined
-by that backend.
+O tamanho máximo de um objeto gravado em um backend de armazenamento é
+determinado por esse backend.
 
-For the Integrated Storage backend, the default limit is 1 MiB. This may be
-configured via `max_entry_size` in the [storage
-stanza](../configuration/storage/raft.mdx#max_entry_size).
+Para o backend de armazenamento integrado, o limite padrão é de 1 MiB.
+Isso pode ser configurado por meio de `max_entry_size` na
+[stanza storage](../configuration/storage/raft.mdx#max_entry_size).
 
-Many of the other limits within OpenBao derive from the maximum size of
-a storage entry, as described in the next sections. It is possible to
-recover from an error where a storage entry has reached its maximum
-size by reconfiguring OpenBao to a larger maximum storage
-entry. However, using large storage entries also negatively affects
-performance, as even a small change may become a large
-read-modify-write cycle on the entire entry. Larger writes may also delay
-Raft heartbeats, leading to leadership instability.
+Muitos dos outros limites dentro do OpenBao derivam do tamanho máximo de uma
+entrada de armazenamento, conforme descrito nas próximas seções.
+É possível recuperar-se de um erro em que uma entrada de armazenamento atingiu
+seu tamanho máximo reconfigurando o OpenBao para um tamanho máximo de entrada de
+armazenamento maior.
+No entanto, o uso de entradas de armazenamento grandes também afeta
+negativamente o desempenho, pois mesmo uma pequena alteração pode se tornar um
+grande ciclo de leitura-modificação-gravação em toda a entrada.
+Gravações maiores também podem atrasar os heartbeats do Raft, levando à
+instabilidade de liderança.
 
-### Mount point limits
+### Limites de pontos de montagem
 
-All secret engine mount points, and all auth mount points, must each fit
-within a single storage entry. Each JSON object describing a mount
-takes about 500 bytes, but is stored in compressed form at a typical cost of
-about 75 bytes. Each of (1) auth mounts, (2) secret engine mount points,
-(3) local-only auth methods, and (4) local-only secret engine mounts are
-stored separately, so the limit applies to each independently.
+Todos os pontos de montagem do mecanismo de segredos e todos os pontos de
+montagem de autenticação devem caber em uma única entrada de armazenamento.
+Cada objeto JSON que descreve uma montagem ocupa cerca de 500 bytes, mas é
+armazenado de forma compactada a um custo típico de cerca de 75 bytes.
+Cada um dos seguintes itens: (1) montagens de autenticação, (2) pontos de
+montagem do mecanismo de segredos, (3) métodos de autenticação somente locais e
+(4) montagens do mecanismo de segredos somente locais são armazenados
+separadamente, portanto, o limite se aplica a cada um independentemente.
 
-|                                              | Integrated Storage default (1 MiB) |
-| -------------------------------------------- | ---------------------------------- |
-| Maximum number of secret engine mount points | ~14000                             |
-| Maximum number of enabled auth methods       | ~14000                             |
-| Maximum mount point length                   | no enforced limit                  |
+|                                                              | Padrão do armazenamento integrado (1 MiB) |
+|--------------------------------------------------------------|-------------------------------------------|
+| Número máximo de pontos de montagem do mecanismo de segredos | ~14000                                    |
+| Número máximo de métodos de autenticação habilitados         | ~14000                                    |
+| Comprimento máximo do ponto de montagem                      | sem limite imposto                        |
 
-Specifying distinct per-mount options, or using long mount point paths, can
-increase the space required per mount.
+Especificar opções distintas por montagem ou usar caminhos longos para pontos de
+montagem pode aumentar o espaço necessário por montagem.
 
-The number of mount points can be monitored by reading the
-[`sys/auth`](/api-docs/system/auth) and
-[`sys/mounts`](/api-docs/system/mounts) endpoints from the root namespace and
-similar sub-paths for namespaces respectively, like: `namespace1/sys/auth`,
-`namespace1/sys/mounts`, etc.
+O número de pontos de montagem pode ser monitorado lendo os endpoints
+[`sys/auth`](/api-docs/system/auth) e [`sys/mounts`](/api-docs/system/mounts) do
+namespace raiz e subcaminhos semelhantes para namespaces, respectivamente, como:
+`namespace1/sys/auth`, `namespace1/sys/mounts`, etc.
 
-Alternatively, use the
+Alternativamente, use as métricas de telemetria
 [`vault.core.mount_table.num_entries`](telemetry/metrics/core-system.mdx#vault-core-mount_table-num_entries)
-and
+e
 [`vault.core.mount_table.size`](telemetry/metrics/core-system.mdx#vault-core-mount_table-size)
-telemetry metrics to monitor the number of mount points and size of each mount table.
+para monitorar o número de pontos de montagem e o tamanho de cada tabela de montagem.
 
-### Namespace limits
+### Limites de namespace
 
-The entire list of namespaces must fit in a single storage
-entry. However, the effective limit is generally much smaller because each
-namespace must have at least two secret engine mounts (for `sys` and `identity`),
-one local secret engine (`cubbyhole`) and one auth engine mount (`token`).
+A lista completa de namespaces deve caber em uma única entrada de armazenamento.
+No entanto, o limite efetivo geralmente é muito menor, pois cada namespace deve
+ter pelo menos duas montagens de mecanismo de segredos (para `sys` e
+`identity`), um mecanismo de segredos local (`cubbyhole`) e uma montagem de
+mecanismo de autenticação (`token`).
 
-|                                                                              | Integrated storage default (1 MiB) |
-| ---------------------------------------------------------------------------- | ---------------------------------- |
-| Maximum number of namespaces                                                 | ~7000                              |
-| Maximum number of namespaces with one additional secret engine per namespace | ~4600                              |
-| Maximum nesting depth for namespaces                                         | ~220                               |
+|                                                                                  | Padrão do armazenamento integrado (1 MiB) |
+|----------------------------------------------------------------------------------|-------------------------------------------|
+| Número máximo de namespaces                                                      | ~7000                                     |
+| Número máximo de namespaces com um mecanismo de segredos adicional por namespace | ~4600                                     |
+| Profundidade máxima de aninhamento para namespaces                               | ~220                                      |
 
-The maximum nesting depth calculation assumes a cost of 40 bytes per namespace
-path element. 160 nested paths = 160 namespaces ranging from 40 bytes to
-6400 bytes.
+O cálculo da profundidade máxima de aninhamento assume um custo de 40 bytes por
+elemento de caminho de namespace.
+160 caminhos aninhados = 160 namespaces, variando de 40 bytes a 6400 bytes.
 
-The number of namespaces can be monitored by querying
+O número de namespaces pode ser monitorado consultando
 [`sys/namespaces`](/api-docs/system/namespaces).
 
-To estimate the number of namespaces that can be created, divide the mount
-point limit by the larger of the number of auth mounts per namespace
-(including `ns_token`) and the number of secret mounts per namespace
-(including `identity` and `sys`.)
+Para estimar o número de namespaces que podem ser criados, divida o limite de
+pontos de montagem pelo maior valor entre o número de montagens de autenticação
+por namespace (incluindo `ns_token`) e o número de montagens de segredos por
+namespace (incluindo `identity` e `sys`).
 
-### Entity and group limits
+### Limites de entidades e grupos
 
-The metadata that may be attached to an identity entity or an entity group
-has the following constraints:
+Os metadados que podem ser anexados a uma entidade de identidade ou a um grupo
+de entidades têm as seguintes restrições:
 
-|                                       | Limit     |
-| ------------------------------------- | --------- |
-| Number of key-value pairs in metadata | 64        |
-| Metadata key size                     | 128 bytes |
-| Metadata value size                   | 512 bytes |
+|                                           | Limite    |
+|-------------------------------------------|-----------|
+| Número de pares chave-valor nos metadados | 64        |
+| Tamanho da chave de metadados             | 128 bytes |
+| Tamanho do valor de metadados             | 512 bytes |
 
-OpenBao shards the entities across 256 storage entries. This creates a hard
-limit of  256MiB on Integrated Storage with its default settings. Entity aliases
-are stored inline in the Entity objects and so consume the same pool of storage.
-Entity definitions are compressed within each storage entry, and the
-pre-compression size varies with the number of entity aliases and the amount of
-metadata. Minimally-populated entities are about 200 bytes after compression.
+O OpenBao fragmenta as entidades em 256 entradas de armazenamento.
+Isso cria um limite rígido de 256 MiB no armazenamento integrado com suas
+configurações padrão.
+Os aliases de entidade são armazenados em linha nos objetos de entidade e,
+portanto, consomem o mesmo pool de armazenamento.
+As definições de entidade são compactadas em cada entrada de armazenamento, e o
+tamanho antes da compactação varia com o número de aliases de entidade e a
+quantidade de metadados.
+Entidades com preenchimento mínimo têm cerca de 200 bytes após a compactação.
 
-Group definitions are stored separately, in their own pool of 256
-storage entries. The size of each group object depends on the number
-of members and the amount of metadata. Group aliases and group
-membership information is stored inline in each Group object. A group
-with no metadata, holding 10 entities, will use about 500 bytes per
-group. A group holding 100 entities would instead consume about 4,000
-bytes.
+As definições de grupo são armazenadas separadamente, em seu próprio pool de 256
+entradas de armazenamento.
+O tamanho de cada objeto de grupo depende do número de membros e da quantidade
+de metadados.
+Os aliases de grupo e as informações de associação de grupo são armazenados
+diretamente em cada objeto de grupo.
+Um grupo sem metadados, contendo 10 entidades, usará cerca de 500 bytes por
+grupo.
+Um grupo contendo 100 entidades consumiria cerca de 4.000 bytes.
 
-The following table shows a best-case estimate and a more conservative
-estimate for entities and groups. The number is slightly less than the
-amount that fits in one shard, to reflect the fact that the first
-shard to fill up will start inducing failures. This maximum will
-decrease if each entity has a large amount of metadata, or if each
-group has a large number of members.
+A tabela a seguir mostra uma estimativa otimista e uma estimativa mais
+conservadora para entidades e grupos.
+O número é ligeiramente menor que a quantidade que cabe em um fragmento, para
+refletir que o primeiro fragmento a ser preenchido começará a causar falhas.
+Esse máximo diminuirá se cada entidade tiver uma grande quantidade de metadados
+ou se cada grupo tiver muitos membros.
 
-|                                                                                          | Integrated storage default (1 MiB) |
-| ---------------------------------------------------------------------------------------- | ---------------------------------- |
-| Maximum number of identity entities (best case, 200 bytes per entity)                    | ~1,250,000                         |
-| Maximum number of identity entities (conservative case, 500 bytes per entity)            | ~480,000                           |
-| Maximum number of identity entities (maximum permitted metadata, 41160 bytes per entity) | 2,400                              |
-| Maximum number of groups (10 entities per group)                                         | ~480,000                           |
-| Maximum number of groups (100 entities per group)                                        | ~50,000                            |
-| Maximum number of members in a group                                                     | ~23,000                            |
+|                                                                                                    | Padrão do armazenamento integrado (1 MiB) |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------|
+| Número máximo de entidades de identidade (melhor caso, 200 bytes por entidade)                     | ~1.250.000                                |
+| Número máximo de entidades de identidade (caso conservador, 500 bytes por entidade)                | ~480.000                                  |
+| Número máximo de entidades de identidade (metadados máximos permitidos, 41.160 bytes por entidade) | 2.400                                     |
+| Número máximo de grupos (10 entidades por grupo)                                                   | ~480.000                                  |
+| Número máximo de grupos (100 entidades por grupo)                                                  | ~50.000                                   |
+| Número máximo de membros em um grupo                                                               | ~23.000                                   |
 
-The number of entities can be monitored using OpenBao's [telemetry](telemetry/index.mdx#token-identity-and-lease-metrics); see `vault.identity.num_entities` (total) or `vault.identity.entities.count` (by namespace).
+O número de entidades pode ser monitorado usando a
+[telemetria](telemetry/index.mdx#token-identity-and-lease-metrics) do OpenBao;
+consulte `vault.identity.num_entities` (total) ou
+`vault.identity.entities.count` (por namespace).
 
-The cost of entity and group updates grows as the number of objects in
-each shard increases. This cost can be monitored via the
-`vault.identity.upsert_entity_txn` and
-the `vault.identity.upsert_group_txn` metrics.
+O custo das atualizações de entidades e grupos aumenta conforme o número de
+objetos em cada fragmento aumenta.
+Esse custo pode ser monitorado por meio das métricas
+`vault.identity.upsert_entity_txn` e `vault.identity.upsert_group_txn`.
 
-Very large internal groups should be avoided (more than 1000 members),
-because the membership list in a group must reside in a single storage entry.
-Instead, consider using [external groups](../concepts/identity.mdx#external-vs-internal-groups) or split the group up into multiple sub-groups.
+Grupos internos muito grandes (mais de 1000 membros) devem ser evitados, pois a
+lista de membros de um grupo deve residir em uma única entrada de armazenamento.
+Em vez disso, considere usar
+[grupos externos](../concepts/identity.mdx#external-vs-internal-groups) ou
+dividir o grupo em vários subgrupos.
 
-### Token limits
+### Limites de token
 
-One storage entry is used per token; there is thus no
-upper bound on the number of active tokens. There are no restrictions on
-the token metadata field, other than the entire token must fit into one
-storage entry:
+Uma entrada de armazenamento é usada por token; portanto, não há limite máximo
+para o número de tokens ativos.
+Não há restrições no campo de metadados do token, além do fato de que o token
+inteiro deve caber em uma única entrada de armazenamento:
 
-|                                       | Limit    |
-| ------------------------------------- | -------- |
-| Number of key-value pairs in metadata | no limit |
-| Metadata key size                     | no limit |
-| Metadata value size                   | no limit |
-| Total size of token metadata          | 512 KiB  |
+|                                           | Limite     |
+|-------------------------------------------|------------|
+| Número de pares chave-valor nos metadados | sem limite |
+| Tamanho da chave de metadados             | sem limite |
+| Tamanho do valor de metadados             | sem limite |
+| Tamanho total dos metadados do token      | 512 KiB    |
 
-### Policy limits
+### Limites de política
 
-The maximum size of a policy is limited by the storage
-entry size. Policy lists that appear in tokens or entities must fit
-within a single storage entry.
+O tamanho máximo de uma política é limitado pelo tamanho da entrada de
+armazenamento.
+As listas de políticas que aparecem em tokens ou entidades devem caber em uma
+única entrada de armazenamento.
 
-|                                                | Integrated Storage default (1 MiB) |
-| ---------------------------------------------- | ---------------------------------- |
-| Maximum policy size                            | 1 MiB                              |
-| Maximum number of policies per namespace       | no limit                           |
-| Maximum number of policies per token           | ~28,000                            |
-| Maximum number of policies per entity or group | ~28,000                            |
+|                                                  | Padrão do armazenamento integrado (1 MiB) |
+|--------------------------------------------------|-------------------------------------------|
+| Tamanho máximo da política                       | 1 MiB                                     |
+| Número máximo de políticas por namespace         | sem limite                                |
+| Número máximo de políticas por token             | ~28.000                                   |
+| Número máximo de políticas por entidade ou grupo | ~28.000                                   |
 
-Each time a token is used, OpenBao must assemble the collection of
-policies attached to that token, to the entity, to any groups that the
-entity belongs to, and recursively to any groups that contain those groups.
-Very large numbers of policies are possible, but can cause OpenBao’s
-response time to increase. You can monitor the
-[`vault.core.fetch_acl_and_token`](telemetry/index.mdx#core-metrics)
-metric to determine if the time required to assemble an access control list
-is becoming excessive.
+Cada vez que um token é usado, o OpenBao precisa reunir a coleção de políticas
+associadas a esse token, à entidade, a quaisquer grupos aos quais a entidade
+pertença e, recursivamente, a quaisquer grupos que contenham esses grupos.
+Um número muito grande de políticas é possível, mas pode aumentar o tempo de
+resposta do OpenBao.
+Você pode monitorar a métrica
+[`vault.core.fetch_acl_and_token`](telemetry/index.mdx#core-metrics) para
+determinar se o tempo necessário para montar uma lista de controle de acesso
+está se tornando excessivo.
 
-### Versioned key-value store (kv-v2 secret engine)
+### Armazenamento de chave-valor versionado (mecanismo de segredos kv-v2)
 
-|                                                          | Limit                                                      |
-| -------------------------------------------------------- | ---------------------------------------------------------- |
-| Number of secrets                                        | no limit, up to available storage capacity                 |
-| Maximum size of one version of a secret                  | slightly less than one storage entry (512 KiB or 1024 KiB) |
-| Number of versions of a secret                           | default 10; configurable per-secret or per-mount           |
-| Maximum number of versions (not checked when configured) | at least 24,000                                            |
+|                                                              | Limite                                                                |
+|--------------------------------------------------------------|-----------------------------------------------------------------------|
+| Número de segredos                                           | sem limite, até a capacidade de armazenamento disponível              |
+| Tamanho máximo de uma versão de um segredo                   | um pouco menos que uma entrada de armazenamento (512 KiB ou 1024 KiB) |
+| Número de versões de um segredo                              | padrão 10; configurável por segredo ou por montagem                   |
+| Número máximo de versões (não verificado quando configurado) | pelo menos 24.000                                                     |
 
-Each version of a secret must fit in a single storage entry; the
-key-value pairs are converted to JSON before storage.
+Cada versão de um segredo deve caber em uma única entrada de armazenamento; os
+pares chave-valor são convertidos para JSON antes do armazenamento.
 
-Version metadata consumes 21 bytes per version and must fit in a
-single storage entry, separate from the stored data.
+Os metadados de versão consomem 21 bytes por versão e devem caber em uma única
+entrada de armazenamento, separada dos dados armazenados.
 
-Each secret also has version-agnostic metadata. This data can contain a `custom_metadata` field of
-user-provided key-value pairs. OpenBao imposes the following custom metadata limits:
+Cada segredo também possui metadados independentes de versão.
+Esses dados podem conter um campo `custom_metadata` com pares chave-valor
+fornecidos pela pessoa usuária.
+O OpenBao impõe os seguintes limites de metadados personalizados:
 
-|                                           | Limit     |
-| ----------------------------------------- | --------- |
-| Number of custom metadata key-value pairs | 64        |
-| Custom metadata key size                  | 128 bytes |
-| Custom metadata value size                | 512 bytes |
+|                                                         | Limite    |
+|---------------------------------------------------------|-----------|
+| Número de pares chave-valor de metadados personalizados | 64        |
+| Tamanho da chave de metadados personalizados            | 128 bytes |
+| Tamanho do valor de metadados personalizados            | 512 bytes |
 
-### Transit secret engine
+### Mecanismo de segredos Transit
 
-The maximum size of a Transit ciphertext or plaintext is limited by OpenBao's
-maximum request size, as described [below](#request-size).
+O tamanho máximo de um texto cifrado ou texto plano do Transit é limitado pelo
+tamanho máximo da requisição do OpenBao, conforme descrito
+[abaixo](#request-size).
 
-All archived versions of a single key must fit in a single storage entry.
-This limit depends on the key size.
+Todas as versões arquivadas de uma única chave devem caber em uma única entrada
+de armazenamento.
+Esse limite depende do tamanho da chave.
 
-| Key length           | Integrated Storage default (1 MiB) |
-| -------------------- | ---------------------------------- |
-| aes128-gcm96 keys    | 4017                               |
-| aes256-gcm96 keys    | 3731                               |
-| chacha-poly1305 keys | 3731                               |
-| ed25519 keys         | 2841                               |
-| ecdsa-p256 keys      | 1635                               |
-| ecdsa-p384 keys      | 1318                               |
-| ecdsa-p523 keys      | 1078                               |
-| 1024-bit RSA keys    | 333                                |
-| 2048-bit RSA keys    | 233                                |
-| 4096-bit RSA kyes    | 178                                |
+| Comprimento da chave    | Padrão do armazenamento integrado (1 MiB) |
+|-------------------------|-------------------------------------------|
+| Chaves aes128-gcm96     | 4017                                      |
+| Chaves aes256-gcm96     | 3731                                      |
+| Chaves chacha-poly1305  | 3731                                      |
+| Chaves ed25519          | 2841                                      |
+| Chaves ecdsa-p256       | 1635                                      |
+| Chaves ecdsa-p384       | 1318                                      |
+| Chaves ecdsa-p523       | 1078                                      |
+| Chaves RSA de 1024 bits | 333                                       |
+| Chaves RSA de 2048 bits | 233                                       |
+| Chaves RSA de 4096 bits | 178                                       |
 
-## Other limits
+## Outros limites
 
-### Request size
+### Tamanho da requisição
 
-The maximum size of an HTTP request sent to OpenBao is limited by
-the `max_request_size` option in the [listener stanza](../configuration/listener/tcp.mdx). It defaults to 32 MiB. This value, minus the overhead of
-the HTTP request itself, places an upper bound on any Transit operation,
-and on the maximum size of any key-value secrets.
+O tamanho máximo de uma requisição HTTP enviada ao OpenBao é limitado pela opção
+`max_request_size` na
+[stanza listener](../configuration/listener/tcp.mdx).
+O valor padrão é 32 MiB.
+Esse valor, menos a sobrecarga da própria requisição HTTP, estabelece um limite
+superior para qualquer operação do Transit, e para o tamanho máximo de qualquer
+segredo de chave-valor.
 
-### Request duration
+### Duração da requisição
 
-The maximum duration of an OpenBao operation is
-[`max_request_duration`](../configuration/listener/tcp.mdx), which defaults to
-90 seconds. If a particular secret engine takes longer than this to perform an
-operation on a remote service, the OpenBao client will see a failure.
+A duração máxima de uma operação do OpenBao é
+[`max_request_duration`](../configuration/listener/tcp.mdx), cujo valor padrão é
+90 segundos.
+Se um mecanismo de segredos específico demorar mais do que isso para executar
+uma operação em um serviço remoto, o cliente OpenBao verá uma falha.
 
-The environment variable [`VAULT_CLIENT_TIMEOUT`](../commands/index.mdx#vault_client_timeout) sets a client-side maximum duration as well,
-which is 60 seconds by default.
+A variável de ambiente
+[`VAULT_CLIENT_TIMEOUT`](../commands/index.mdx#vault_client_timeout) também
+define uma duração máxima no lado do cliente, que é de 60 segundos por padrão.
 
-### Request JSON Complexity
+### Complexidade do JSON da requisição
 
-The estimated maximum number of memory in the parsed representation of the
-JSON request body is limited by the `max_request_json_memory` option in the
-[listener stanza](../configuration/listener/tcp.mdx). It defaults to
-32MB + 512KB. This limit is in place to prevent attackers from sending
-specifically crafted JSON bodies that, once unmarshaled, consume significantly
-more memory than the original request body (circumventing the
-`max_request_size` limit). This limit should not affect valid requests, as
-even large requests should use a bounded total amount of memory due to using
-few complex objects.
+A quantidade máxima estimada de memória na representação analisada do corpo da
+requisição JSON é limitada pela opção `max_request_json_memory` na
+[stanza listener](../configuration/listener/tcp.mdx).
+O valor padrão é 32 MB + 512 KB.
+Esse limite existe para impedir que pessoas invasoras enviem corpos JSON
+especificamente criados que, uma vez desserializados, consumam
+significativamente mais memória do que o corpo da requisição original
+(contornando o limite de `max_request_size`).
+Este limite não deve afetar requisições válidas, pois mesmo requisições grandes
+devem usar uma quantidade total limitada de memória devido ao uso de poucos
+objetos complexos.
 
-Similarly, the `max_request_json_strings` option in the
-[listener stanza](../configuration/listener/tcp.mdx) is used to limit the
-total number of unique strings (keys + values) to restrict the number of HMAC
-calls in Audit invocations. This limit is in place to prevent attackers from
-sending unauthenticated requests that, once audited, consume significantly
-more memory and CPU cycles than the original request body would. This limit
-should not affect valid requests as most valid requests have a reasonable
-number of individual strings.
+Da mesma forma, a opção `max_request_json_strings` na
+[stanza listener](../configuration/listener/tcp.mdx) é usada para limitar o
+número total de strings exclusivas (chaves + valores) para restringir o número
+de chamadas HMAC em invocações do Audit.
+Esse limite existe para impedir que pessoas invasoras enviem requisições não
+autenticadas que, uma vez auditadas, consomem significativamente mais memória e
+ciclos de CPU do que o corpo da requisição original.
+Esse limite não deve afetar requisições válidas, pois a maioria das requisições
+válidas tem um número razoável de strings individuais.
 
-The definitions for "JSON complexity" might change in the future.
+As definições de "complexidade do JSON" podem mudar no futuro.
 
-### Lease limits
+### Limites de concessão
 
-A systemwide [maximum TTL](../configuration/index.mdx#max_lease_ttl), and a
-[maximum TTL per mount point](/api-docs/system/mounts#max_lease_ttl-1) can be
-configured.
+É possível configurar um [TTL máximo](../configuration/index.mdx#max_lease_ttl)
+para todo o sistema e um
+[TTL máximo por ponto de montagem](/api-docs/system/mounts#max_lease_ttl-1).
 
-Although no technical maximum exists, high lease counts can cause
-degradation in system performance. We recommend short default
-time-to-live values on tokens and leases to avoid a large backlog of
-unexpired leases, or a large number of simultaneous expirations.
+Embora não exista um limite máximo técnico, muitas concessões pode causar
+degradação no desempenho do sistema.
+Recomendamos valores padrão curtos de tempo de vida (TTL) para tokens e
+concessões, a fim de evitar um grande acúmulo de concessões não expiradas ou
+muitas expirações simultâneas.
 
-|                                    | Limit                     |
-| ---------------------------------- | ------------------------- |
-| Maximum number of leases           | advisory limit at 256,000 |
-| Maximum duration of lease or token | 768 hours by default      |
+|                                      | Limite                        |
+|--------------------------------------|-------------------------------|
+| Número máximo de concessões          | limite recomendado de 256.000 |
+| Duração máxima da concessão ou token | 768 horas por padrão          |
 
-The current number of unexpired leases can be monitored via the
-[`vault.expire.num_leases`](telemetry/index.mdx#token-identity-and-lease-metrics) metric.
+O número atual de concessões não expiradas pode ser monitorado através da
+métrica
+[`vault.expire.num_leases`](telemetry/index.mdx#token-identity-and-lease-metrics).
 
-### External plugin limits
+### Limites de plugins externos
 
-The [plugin system](../plugins/index.mdx) launches a separate process
-initiated by OpenBao that communicates over RPC. For each secret engine and auth
-method that's enabled as an external plugin, OpenBao will spawn a process on the
-host system. For the Database Secrets Engines, external database plugins will
-spawn a process for every configured connection.
+O [sistema de plugins](../plugins/index.mdx) inicia um processo separado
+iniciado pelo OpenBao que se comunica via RPC.
+Para cada mecanismo de segredos e método de autenticação habilitado como um
+plugin externo, o OpenBao criará um processo no sistema host.
+Para os mecanismos de segredos de banco de dados, os plugins de banco de dados
+externos criarão um processo para cada conexão configurada.
 
-Regardless of plugin type, each of these processes will incur resource overhead
-on the system, including but not limited to resources such as CPU, memory,
-networking, and file descriptors. There's no specific limit on the number
-secrets engines, auth methods, or database configured connections that can be
-enabled. This ultimately depends on the particular plugin resource utilization,
-the extent to which that plugin is being called, and the available resources on
-the system. For plugins of the same type, each additional process will incur a
-roughly linear increase in resource utilization. This assumes the usage of each
-plugin of the same type is similar.
+Independentemente do tipo de plugin, cada um desses processos acarretará
+sobrecarga de recursos no sistema, incluindo, entre outros, recursos como CPU,
+memória, rede e descritores de arquivo.
+Não há limite específico para o número de mecanismos de segredos, métodos de
+autenticação ou conexões de banco de dados configuradas que podem ser ativadas.
+Isso depende, em última análise, da utilização de recursos do plugin específico,
+da frequência com que esse plugin está sendo chamado e dos recursos disponíveis
+no sistema.
+Para plugins do mesmo tipo, cada processo adicional acarretará um aumento
+aproximadamente linear na utilização de recursos.
+Isso pressupõe que o uso de cada plugin do mesmo tipo seja semelhante.
