@@ -6,52 +6,59 @@
 # The original work was translated from English into Brazilian Portuguese.
 # https://github.com/openbao/openbao/blob/-/LICENSE
 
-sidebar_label: Overview
-description: |-
-  Learn about how telemetry metrics are structured in OpenBao
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/docs/internals/telemetry/metrics/index.mdx
+revision: 49d98d72a823a7cd3dbd0f17ae2a41b25ba6b68f
+status: ready
+
+sidebar_label: Visão geral
+description: >-
+  Saiba mais sobre como as métricas de telemetria são estruturadas no OpenBao.
 ---
 
-# Telemetry metrics overview
+# Visão geral das métricas de telemetria
 
-## Metric types
+## Tipos de métricas
 
-OpenBao provides three types of telemetry metrics:
+O OpenBao oferece três tipos de métricas de telemetria:
 
-- **Counter metrics** increment when an event occurs. Counters are cumulative
-  and reset at the end of reporting intervals.
-- **Gauge metrics** provide measurements of current values.
-- **Summary metrics** provide observational values. OpenBao commonly uses
-  summaries to measure the time required to for a discrete event to complete.
+- **Métricas de counter** incrementam quando um evento ocorre.
+  Os counters são cumulativos e reiniciados ao final dos intervalos de
+  relatório.
+- **Métricas de gauge** fornecem medições dos valores atuais.
+- **Métricas de summary** fornecem valores observacionais.
+  O OpenBao geralmente usa summaries para medir o tempo necessário para que um
+  evento discreto seja concluído.
 
-High-cardinality gauges, like `vault.kv.secret.count`, update at the interval
-configured with `usage_gauge_period` in the `telemetry` stanza. The default
-reporting interval for gauge metrics is 10 minutes.
+Gauges de alta cardinalidade, como `vault.kv.secret.count`, são atualizados no
+intervalo configurado com `usage_gauge_period` na stanza `telemetry`.
+O intervalo de relatório padrão para métricas de gauge é de 10 minutos.
 
-## Metric labels
+## Rótulos de métricas
 
-Some telemetry metrics come with additional metadata that provides context for
-the measurement. For example, a token metric might include the namespace it
-belongs to or the authentication method used to create it.
+Algumas métricas de telemetria vêm com metadados adicionais que fornecem
+contexto para a medição.
+Por exemplo, uma métrica de token pode incluir o namespace ao qual pertence ou o
+método de autenticação usado para criá-la.
 
-Metric metadata is labeled and incorporated into the metric name for the
-in-memory telemetry and any other telemetry engine that does not support custom
-labels.
+Os metadados da métrica são rotulados e incorporados ao nome da métrica para a
+telemetria em memória e qualquer outro mecanismo de telemetria que não suporte
+rótulos personalizados.
 
-The metric name in the table below is followed by a list of labels supported,
-in the order in which they appear, if flattened.
+O nome da métrica na tabela abaixo é seguido por uma lista de rótulos
+suportados, na ordem em que aparecem, se simplificados.
 
 
-| Label                  | Example                   | Description                                                                                                                                  |
-|------------------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| `auth_method`          | `userpass`                | Authorization engine type                                                                                                                    |
-| `cluster`              | `openbao-cluster-d54ad07` | Name of the cluster where the metric originated                                                                                              |
-| `creation_ttl`         | `7d`                      | Time-to-live assigned at creation, rounded up to the next-highest bucket: `1m`, `10m`, `20m`, `1h`, `2h`, `1d`, `2d`, `7d`, `30d`, or `+Inf` |
-| `mount_point`          | `auth/userpass/`          | Path at which an authentication method or secret engine is mounted                                                                           |
-| `name`                 | `memoryLimit`             | Name of the object being aggregated (for example, a quota or quota rule)                                                                     |
-| `namespace`            | `ns1`                     | A namespace path or `root` for the root namespace                                                                                            |
-| `policy`               | `default`                 | Name of the associated policy                                                                                                                |
-| `secret_engine`        | `kv`                      | Secrets engine type                                                                                                                          |
-| `token_type`           | `service`                 | Type of the associated token: `batch` or `service`                                                                                           |
-| `peer_id`              | `node-1`                  | Unique identifier of a raft peer node                                                                                                        |
-| `node_id`              | `node-42`                 | Unique identifier of a raft peer node (duplicates `peer_id`)                                                                                 |
-| `snapshot_config_name` | `config1`                 | Name of the configuration used for automated snapshots                                                                                       |
+| Rótulo                 | Exemplo                   | Descrição                                                                                                                                         |
+|------------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `auth_method`          | `userpass`                | Tipo de mecanismo de autorização.                                                                                                                 |
+| `cluster`              | `openbao-cluster-d54ad07` | Nome do cluster de origem da métrica.                                                                                                             |
+| `creation_ttl`         | `7d`                      | Tempo de vida atribuído na criação, arredondado para o próximo bucket superior: `1m`, `10m`, `20m`, `1h`, `2h`, `1d`, `2d`, `7d`, `30d` ou `+Inf` |
+| `mount_point`          | `auth/userpass/`          | Caminho no qual um método de autenticação ou mecanismo de segredos está montado.                                                                  |
+| `name`                 | `memoryLimit`             | Nome do objeto que está sendo agregado (por exemplo, uma cota ou regra de cota).                                                                  |
+| `namespace`            | `ns1`                     | Um caminho de namespace ou `root` para o namespace raiz.                                                                                          |
+| `policy`               | `default`                 | Nome da política associada.                                                                                                                       |
+| `secret_engine`        | `kv`                      | Tipo de mecanismo de segredos.                                                                                                                    |
+| `token_type`           | `service`                 | Tipo do token associado: `batch` ou `service`.                                                                                                    |
+| `peer_id`              | `node-1`                  | Identificador único de um nó par do raft.                                                                                                         |
+| `node_id`              | `node-42`                 | Identificador único de um nó par do raft (duplica `peer_id`).                                                                                     |
+| `snapshot_config_name` | `config1`                 | Nome da configuração usada para snapshots automatizados.                                                                                          |
