@@ -1,11 +1,25 @@
+---
+# Copyright (c) 2026 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/partials/telemetry-metrics/vault/quota/lease_count/counter.mdx
+revision: 9a27b2130ef4e2fcf3bb982ef1c491562917b3f8
+status: ready
+---
+
 ### vault.quota.lease_count.counter {#vault-quota-lease_count-counter}
 
-Metric type | Value | Description
------------ | ----- | -----------
-gauge       | lease | Total number of leases associated with the named quota rule
+Tipo de métrica | Valor  | Descrição
+--------------- |--------| ---------
+gauge           | lease  | Número total de leases associados à regra de cota especificada.
 
-The number of leases reported is specific to the quota rule listed in the `name`
-label, not the number of leases in general. For example, if the named rule
-allows for 50 leases max and there are currently 40 leases in the scope of that
-quota rule, the value of `vault.quota.lease_count.counter` is 40 even if there
-are 1000 other leases that are unscoped or in the scope of other quota rules.
+O número de leases relatado é específico para a regra de cota listada no rótulo
+`name` e não o número total de leases.
+Por exemplo, se a regra especificada permite um máximo de 50 leases e existem
+atualmente 40 leases no escopo dessa regra de cota, o valor de
+`vault.quota.lease_count.counter` será 40, mesmo que existam outros 1000 leases
+que não estejam no escopo ou que pertençam a outras regras de cota.
