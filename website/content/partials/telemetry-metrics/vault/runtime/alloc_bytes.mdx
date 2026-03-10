@@ -1,8 +1,21 @@
+---
+# Copyright (c) 2026 OpenBao a Series of LF Projects, LLC.
+# Copyright (c) 2015 HashiCorp, Inc.
+#
+# Documentation licensed under the Mozilla Public License 2.0.
+# The original work was translated from English into Brazilian Portuguese.
+# https://github.com/openbao/openbao/blob/-/LICENSE
+
+source_url: https://github.com/openbao/openbao/blob/release/2.5.x/website/content/partials/telemetry-metrics/vault/runtime/alloc_bytes.mdx
+revision: 9a27b2130ef4e2fcf3bb982ef1c491562917b3f8
+status: ready
+---
+
 ### vault.runtime.alloc_bytes {#vault-runtime-alloc_bytes}
 
-Metric type | Value | Description
------------ | ----- | -----------
-gauge       | bytes | Space currently allocated to OpenBao processes
+Tipo de métrica | Valor | Descrição
+--------------- |-------| ---------
+gauge           | bytes | Espaço atualmente alocado aos processos do OpenBao.
 
-The number of allocated bytes may peak from time to time, but should 
-always return to a steady state value in a health OpenBao installation.
+O número de bytes alocados pode atingir picos ocasionais, mas deve sempre
+retornar a um valor estável em uma instalação saudável do OpenBao.
