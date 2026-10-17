@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **Este repositório foi transferido para o Codeberg.**<br/>
+> O desenvolvimento, as _issues_ e os _pull requests_ agora são gerenciados em
+> **[docsdev/openbao-website-pt-br](https://codeberg.org/docsdev/openbao-website-pt-br)**.
+
 # [openbao-website-pt-br][page]
 
 [![Arquivo README em inglês][badge-readme-en]][readme-en]
